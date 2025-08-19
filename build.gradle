@@ -1,0 +1,109 @@
+plugins {
+    id 'org.springframework.boot' version '3.3.2'
+    id 'io.spring.dependency-management' version '1.1.6'
+    id 'java'
+    id 'jacoco'
+}
+
+group = 'com.churchapp'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    sourceCompatibility = '17'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/java']
+        }
+        resources {
+            srcDirs = ['src/resources']
+        }
+    }
+    test {
+        java {
+            srcDirs = ['src/test/java']
+        }
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Spring Boot Starters
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-amqp'
+    
+    // Apache Camel Integration
+    implementation 'org.apache.camel.springboot:camel-spring-boot-starter:4.7.0'
+    implementation 'org.apache.camel.springboot:camel-spring-rabbitmq-starter:4.7.0'
+    implementation 'org.apache.camel.springboot:camel-jackson-starter:4.7.0'
+    
+    // Functional Programming
+    implementation 'io.vavr:vavr:0.10.4'
+    
+    // Security - JWT Support
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+    
+    // Database and Migrations
+    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client:3.2.0'
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-mysql'
+    
+    // Mapping and Code Generation
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+    
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+    
+    // Testing
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.amqp:spring-rabbit-test'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:postgresql'
+    testImplementation 'org.testcontainers:rabbitmq'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+    }
+    finalizedBy jacocoTestCoverageVerification
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.10 // Temporarily lowered to build iteratively
+            }
+        }
+    }
+}

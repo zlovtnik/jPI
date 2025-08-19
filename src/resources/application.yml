@@ -1,0 +1,62 @@
+spring:
+  application:
+    name: church-app
+  
+  datasource:
+    url: jdbc:mariadb://localhost:3306/churchdb
+    username: root
+    password: secret
+    driver-class-name: org.mariadb.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+  
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MariaDBDialect
+        jdbc:
+          time_zone: UTC
+  
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    connection-timeout: 10s
+    template:
+      retry:
+        enabled: true
+        max-attempts: 3
+  
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+camel:
+  springboot:
+    name: church-app-camel
+  component:
+    spring-rabbitmq:
+      connection-factory: '#rabbitConnectionFactory'
+
+server:
+  port: 8080
+  compression:
+    enabled: true
+
+# JWT Configuration
+jwt:
+  secret: mySecretKey1234567890123456789012345678901234567890
+  expiration: 86400000 # 24 hours in milliseconds
+
+logging:
+  level:
+    com.churchapp: DEBUG
+    org.apache.camel: INFO
+    org.springframework.amqp: DEBUG

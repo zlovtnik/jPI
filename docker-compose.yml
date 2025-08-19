@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  mariadb:
+    image: mariadb:11.2
+    container_name: mariadb-church
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: churchdb
+      MYSQL_USER: churchuser
+      MYSQL_PASSWORD: secret
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./sql/init-mariadb.sql:/docker-entrypoint-initdb.d/init.sql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    networks:
+      - church-network
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-church
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - church-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      start_period: 30s
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  church-app:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mariadb://mariadb/churchdb
+      - SPRING_DATASOURCE_USERNAME=churchuser
+      - SPRING_DATASOURCE_PASSWORD=secret
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+    networks:
+      - church-network
+    restart: on-failure
+
+volumes:
+  mariadb_data:
+  rabbitmq_data:
+
+networks:
+  church-network:
+    driver: bridge
