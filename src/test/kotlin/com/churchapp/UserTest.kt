@@ -1,4 +1,4 @@
-package com.churchapp.entity
+package com.churchapp
 
 import com.churchapp.entity.User
 import org.junit.jupiter.api.Test

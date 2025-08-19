@@ -4,7 +4,7 @@ import com.churchapp.entity.Donation;
 import com.churchapp.entity.Member;
 import com.churchapp.entity.enums.DonationType;
 import com.churchapp.repository.DonationRepository;
-import arrow.core.Either;
+import io.vavr.control.Try;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

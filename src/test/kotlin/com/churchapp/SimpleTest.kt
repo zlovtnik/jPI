@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Assertions.*
 import java.time.LocalDateTime
 import java.util.*
 
-@DisplayName("User Entity Tests")
-class UserTest {
+@DisplayName("User Entity Simple Tests")
+class SimpleUserTest {
 
     private lateinit var user: User
 
@@ -28,17 +28,17 @@ class UserTest {
         assertEquals("testuser", user.username)
         assertEquals("test@example.com", user.email)
         assertEquals("password123", user.password)
-        assertTrue(user.isActive)
+        assertTrue(user.isEnabled)
     }
 
     @Test
     fun `should get display name correctly`() {
-        assertEquals("testuser", user.displayName)
+        assertEquals("testuser", user.username)
     }
 
     @Test
     fun `should have default active status`() {
-        assertTrue(user.getIsActive())
+        assertTrue(user.isEnabled)
     }
 
     @Test

@@ -66,7 +66,7 @@ class ChurchAppIntegrationTest {
         
         // Test date of birth functionality
         assertNotNull(member.dateOfBirth)
-        assertTrue(member.getDateOfBirthOption().isDefined())
+        assertTrue(member.getDateOfBirthOption().isSome())
     }
 
     @Test
@@ -84,7 +84,7 @@ class ChurchAppIntegrationTest {
         assertEquals("Family Member", member.fullName)
         
         // Test optional family relationship
-        assertTrue(member.getFamilyOption().isEmpty())
+        assertTrue(member.getFamilyOption().isNone())
     }
 
     @Test
@@ -118,9 +118,9 @@ class ChurchAppIntegrationTest {
             .build()
 
         // Test empty options
-        assertTrue(member.getPhoneNumberOption().isEmpty())
-        assertTrue(member.getAddressOption().isEmpty())
-        assertTrue(member.getFamilyOption().isEmpty())
+        assertTrue(member.getPhoneNumberOption().isNone())
+        assertTrue(member.getAddressOption().isNone())
+        assertTrue(member.getFamilyOption().isNone())
         
         // Test that we can access these safely
         assertNull(member.getPhoneNumberOption().getOrNull())

@@ -6,11 +6,9 @@ import com.churchapp.entity.enums.RoleType
 import com.churchapp.security.ChurchUserPrincipal
 import com.churchapp.dto.MemberDTO
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Assertions.*
 import java.time.LocalDate
 import java.util.*
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
 /**
  * Basic integration test to verify that all the core components work together
@@ -40,7 +38,7 @@ class BasicIntegrationTest {
         val principal = ChurchUserPrincipal(user)
         assertNotNull(principal)
         assertEquals("testuser", principal.username)
-        assertEquals(user, principal.user)
+        assertEquals(user, principal.getUser())
         assertTrue(principal.isEnabled)
     }
 
@@ -73,11 +71,11 @@ class BasicIntegrationTest {
 
         // Test Arrow Option functionality
         val phoneOption = member.getPhoneNumberOption()
-        assertTrue(phoneOption.isDefined())
+        assertTrue(phoneOption.isSome())
         assertEquals("555-1234", phoneOption.getOrNull())
 
         val addressOption = member.getAddressOption()
-        assertTrue(addressOption.isEmpty())
+        assertTrue(addressOption.isNone())
     }
 
     @Test
@@ -130,7 +128,7 @@ class BasicIntegrationTest {
 
         // Verify the relationship
         val userOption = member.getUserOption()
-        assertTrue(userOption.isDefined())
+        assertTrue(userOption.isSome())
         assertEquals(user, userOption.getOrNull())
 
         // Verify User authorities
@@ -149,13 +147,13 @@ class BasicIntegrationTest {
         )
 
         // Test all optional field accessors return None
-        assertTrue(minimalMember.getPhoneNumberOption().isEmpty())
-        assertTrue(minimalMember.getDateOfBirthOption().isEmpty())
-        assertTrue(minimalMember.getAddressOption().isEmpty())
-        assertTrue(minimalMember.getBaptismDateOption().isEmpty())
-        assertTrue(minimalMember.getFamilyOption().isEmpty())
-        assertTrue(minimalMember.getUserOption().isEmpty())
-        assertTrue(minimalMember.getUpdatedAtOption().isEmpty())
+        assertTrue(minimalMember.getPhoneNumberOption().isNone())
+        assertTrue(minimalMember.getDateOfBirthOption().isNone())
+        assertTrue(minimalMember.getAddressOption().isNone())
+        assertTrue(minimalMember.getBaptismDateOption().isNone())
+        assertTrue(minimalMember.getFamilyOption().isNone())
+        assertTrue(minimalMember.getUserOption().isNone())
+        assertTrue(minimalMember.getUpdatedAtOption().isNone())
 
         // But required fields should be accessible
         assertEquals("Min Max", minimalMember.fullName)
