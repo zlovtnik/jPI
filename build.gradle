@@ -60,9 +60,6 @@ dependencies {
     implementation 'io.arrow-kt:arrow-core:1.2.1'
     implementation 'io.arrow-kt:arrow-fx-coroutines:1.2.1'
 
-    // Vavr for functional programming (Java interop)
-    implementation 'io.vavr:vavr:0.10.4'
-
     // Spring Boot Starters
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -74,6 +71,7 @@ dependencies {
     implementation 'org.apache.camel.springboot:camel-spring-boot-starter:4.7.0'
     implementation 'org.apache.camel.springboot:camel-spring-rabbitmq-starter:4.7.0'
     implementation 'org.apache.camel.springboot:camel-jackson-starter:4.7.0'
+    implementation 'org.apache.camel.springboot:camel-sql-starter:4.7.0'
 
     // Security - JWT Support
     implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
