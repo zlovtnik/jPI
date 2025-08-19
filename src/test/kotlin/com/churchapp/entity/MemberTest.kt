@@ -47,8 +47,8 @@ class MemberTest {
 
     @Test
     fun `should handle phone number option`() {
-        assertTrue(member.getPhoneNumberOption().isDefined())
-        assertEquals("123-456-7890", member.getPhoneNumberOption().getOrNull())
+        assertTrue(member.getPhoneNumberOption().isSome())
+        assertEquals("123-456-7890", member.getPhoneNumberOption().orNull())
     }
 
     @Test
@@ -59,19 +59,19 @@ class MemberTest {
             .email("jane@example.com")
             .build()
         
-        assertTrue(memberWithoutPhone.getPhoneNumberOption().isEmpty())
+    assertTrue(memberWithoutPhone.getPhoneNumberOption().isNone())
     }
 
     @Test
     fun `should handle address option`() {
-        assertTrue(member.getAddressOption().isDefined())
-        assertEquals("123 Main St", member.getAddressOption().getOrNull())
+    assertTrue(member.getAddressOption().isSome())
+    assertEquals("123 Main St", member.getAddressOption().orNull())
     }
 
     @Test
     fun `should handle date of birth option`() {
-        assertTrue(member.getDateOfBirthOption().isDefined())
-        assertEquals(LocalDate.of(1990, 1, 1), member.getDateOfBirthOption().getOrNull())
+    assertTrue(member.getDateOfBirthOption().isSome())
+    assertEquals(LocalDate.of(1990, 1, 1), member.getDateOfBirthOption().orNull())
     }
 
     @Test
@@ -83,13 +83,13 @@ class MemberTest {
             .family(family)
             .build()
         
-        assertTrue(memberWithFamily.getFamilyOption().isDefined())
-        assertEquals(family, memberWithFamily.getFamilyOption().getOrNull())
+    assertTrue(memberWithFamily.getFamilyOption().isSome())
+    assertEquals(family, memberWithFamily.getFamilyOption().orNull())
     }
 
     @Test
     fun `should handle missing family relationship`() {
-        assertTrue(member.getFamilyOption().isEmpty())
+    assertTrue(member.getFamilyOption().isNone())
     }
 
     @Test
@@ -101,8 +101,8 @@ class MemberTest {
             .baptismDate(LocalDate.of(2020, 1, 1))
             .build()
         
-        assertTrue(baptizedMember.getBaptismDateOption().isDefined())
-        assertEquals(LocalDate.of(2020, 1, 1), baptizedMember.getBaptismDateOption().getOrNull())
+    assertTrue(baptizedMember.getBaptismDateOption().isSome())
+    assertEquals(LocalDate.of(2020, 1, 1), baptizedMember.getBaptismDateOption().orNull())
     }
 
     @Test
@@ -139,8 +139,8 @@ class MemberTest {
         assertEquals("Jane", builtMember.firstName)
         assertEquals("Smith", builtMember.lastName)
         assertEquals("jane.smith@example.com", builtMember.email)
-        assertEquals("098-765-4321", builtMember.getPhoneNumberOption().getOrNull())
-        assertEquals("456 Oak St", builtMember.getAddressOption().getOrNull())
-        assertEquals(family, builtMember.getFamilyOption().getOrNull())
+    assertEquals("098-765-4321", builtMember.getPhoneNumberOption().orNull())
+    assertEquals("456 Oak St", builtMember.getAddressOption().orNull())
+    assertEquals(family, builtMember.getFamilyOption().orNull())
     }
 }

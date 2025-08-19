@@ -1,7 +1,5 @@
 package com.churchapp.service;
 
-
-
 import com.churchapp.entity.Member;
 import com.churchapp.repository.MemberRepository;
 import arrow.core.Either;
