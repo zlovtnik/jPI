@@ -26,8 +26,7 @@ class DonationService(
     // Create donation with functional validation
     fun createDonation(donation: Donation): Either<Exception, Donation> = try {
         // Basic validation
-        require(donation.amount.compareTo(BigDecimal.ZERO) > 0) { "Donation amount must be positive" }
-        require(donation.donationType != null) { "Donation type is required" }
+    require(donation.amount.compareTo(BigDecimal.ZERO) > 0) { "Donation amount must be positive" }
 
         val savedDonation = donationRepository.save(donation)
         eventPublisher.publishEvent(DonationCreatedEvent(savedDonation))
@@ -55,8 +54,7 @@ class DonationService(
 
     // Get donation by ID
     fun getDonationById(id: UUID): Optional<Donation> {
-    fun getDonationById(id: UUID): io.vavr.control.Option<Donation> {
-        return io.vavr.control.Option.ofOptional(donationRepository.findById(id))
+        return donationRepository.findById(id)
     }
 
     // Get donations by member
@@ -69,7 +67,6 @@ class DonationService(
             .fold(BigDecimal.ZERO) { acc, donation ->
                 acc.add(requireNotNull(donation.amount) { "Donation amount is required" })
             }
-    }
     }
 
     // Get donations by date range
