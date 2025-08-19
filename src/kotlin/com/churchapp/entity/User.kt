@@ -80,8 +80,10 @@ class User(
     }
 
     override fun hashCode(): Int {
-        // Use id for hash when available (stable), otherwise use System.identityHashCode for reference-based hash
-        return id?.hashCode() ?: System.identityHashCode(this)
+    // Use id for hash when available (stable). For transient objects (null id)
+    // return a stable constant to avoid identity-based hash changes across JVM runs
+    // and reduce surprises when placing transient entities in hashed collections.
+    return id?.hashCode() ?: 0
     }
 
     override fun toString(): String {
