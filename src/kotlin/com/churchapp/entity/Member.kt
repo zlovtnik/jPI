@@ -122,7 +122,42 @@ class MemberBuilder {
     fun updatedAt(updatedAt: LocalDateTime?) = apply { this.updatedAt = updatedAt }
 
     fun build(): Member {
-        return Member(id, firstName, lastName, email, phoneNumber, dateOfBirth, address, 
-                     membershipDate, baptismDate, isActive, family, user, createdAt, updatedAt)
+        // Normalize required fields
+        val normFirstName = firstName.trim()
+        val normLastName = lastName.trim()
+        val normEmail = email.trim().lowercase()
+
+        // Basic validations
+        if (normFirstName.isBlank()) {
+            throw IllegalStateException("First name cannot be blank")
+        }
+        if (normLastName.isBlank()) {
+            throw IllegalStateException("Last name cannot be blank")
+        }
+        val emailRegex = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}")
+        if (normEmail.isBlank() || !emailRegex.matches(normEmail)) {
+            throw IllegalStateException("Invalid email: '$email'")
+        }
+
+        // Normalize optional fields: trim and convert blank -> null
+        val normPhone = phoneNumber?.trim()?.takeIf { it.isNotBlank() }
+        val normAddress = address?.trim()?.takeIf { it.isNotBlank() }
+
+        return Member(
+            id = id,
+            firstName = normFirstName,
+            lastName = normLastName,
+            email = normEmail,
+            phoneNumber = normPhone,
+            dateOfBirth = dateOfBirth,
+            address = normAddress,
+            membershipDate = membershipDate,
+            baptismDate = baptismDate,
+            isActive = isActive,
+            family = family,
+            user = user,
+            createdAt = createdAt,
+            updatedAt = updatedAt
+        )
     }
 }
