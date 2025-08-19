@@ -1,8 +1,6 @@
 package com.churchapp.dto
 
 import java.time.LocalDate
-
-data class MemberDTO(
 import java.util.UUID
 
 data class MemberDTO(
@@ -26,7 +24,7 @@ data class MemberDTO(
 }
 
 class MemberDTOBuilder {
-    private var id: Int? = null
+    private var id: UUID? = null
     private var firstName: String = ""
     private var lastName: String = ""
     private var email: String = ""
@@ -37,7 +35,7 @@ class MemberDTOBuilder {
     private var familyId: Int? = null
     private var active: Boolean = true
 
-    fun id(id: Int?) = apply { this.id = id }
+    fun id(id: UUID?) = apply { this.id = id }
     fun firstName(firstName: String) = apply { this.firstName = firstName }
     fun lastName(lastName: String) = apply { this.lastName = lastName }
     fun email(email: String) = apply { this.email = email }
