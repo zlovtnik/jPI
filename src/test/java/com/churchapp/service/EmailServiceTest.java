@@ -1,10 +1,11 @@
 package com.churchapp.service;
 
-
-
 import com.churchapp.entity.Member;
 import com.churchapp.repository.MemberRepository;
-import io.vavr.control.Try;
+import arrow.core.Either;
+import kotlin.Unit;
+import com.churchapp.service.EmailService;
+import com.churchapp.service.EmailError;
 import org.apache.camel.ProducerTemplate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,10 +37,10 @@ class EmailServiceTest {
         String name = "John Doe";
         
         // When
-        Try<Void> result = emailService.sendWelcomeEmail(email, name);
+        Either<EmailError, Unit> result = emailService.sendWelcomeEmail(email, name);
         
         // Then
-        assertTrue(result.isSuccess());
+        assertTrue(result.isRight());
         verify(camelProducer).sendBody(eq("direct:sendEmail"), any());
     }
     
@@ -50,10 +51,10 @@ class EmailServiceTest {
         String token = "reset-token";
         
         // When
-        Try<Void> result = emailService.sendPasswordResetEmail(email, token);
+        Either<EmailError, Unit> result = emailService.sendPasswordResetEmail(email, token);
         
         // Then
-        assertTrue(result.isSuccess());
+        assertTrue(result.isRight());
         verify(camelProducer).sendBody(eq("direct:sendEmail"), any());
     }
 }

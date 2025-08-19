@@ -50,6 +50,8 @@ data class Donation(
 
     fun getNotesOption(): Option<String> = Option.fromNullable(notes)
 
+    fun getIsAnonymous(): Boolean = isAnonymous
+
     // Functional helper to get donor name or anonymous
     fun getDonorName(): String = when (val memberOption = getMemberOption()) {
         is None -> if (isAnonymous) "Anonymous" else "Unknown"

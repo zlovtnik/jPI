@@ -13,7 +13,7 @@ import java.util.*
 
 @Entity
 @Table(name = "users")
-data class User(
+class User(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID? = null,
@@ -32,7 +32,7 @@ data class User(
     val role: RoleType = RoleType.MEMBER,
 
     @Column(nullable = false)
-    private val enabled: Boolean = true,
+    private var enabled: Boolean = true,
 
     @Column(name = "created_at", nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
@@ -60,4 +60,84 @@ data class User(
     fun getIdOption(): Option<UUID> = id?.some() ?: none()
 
     fun getUpdatedAtOption(): Option<LocalDateTime> = updatedAt?.some() ?: none()
+
+    fun setActive(active: Boolean) {
+        enabled = active
+    }
+
+    // Custom equals/hashCode based on stable identity (database id when non-null, reference equality otherwise)
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is User) return false
+        
+        // If both objects have non-null ids, compare by id (stable database identity)
+        return if (id != null && other.id != null) {
+            id == other.id
+        } else {
+            // Fall back to reference equality for transient objects
+            this === other
+        }
+    }
+
+    override fun hashCode(): Int {
+    // Use id for hash when available (stable). For transient objects (null id)
+    // return a stable constant to avoid identity-based hash changes across JVM runs
+    // and reduce surprises when placing transient entities in hashed collections.
+    return id?.hashCode() ?: 0
+    }
+
+    override fun toString(): String {
+        return "User(id=$id, username='$username', email='$email', role=$role, enabled=$enabled, createdAt=$createdAt, updatedAt=$updatedAt)"
+    }
+
+    companion object {
+        @JvmStatic
+        fun builder(): UserBuilder {
+            return UserBuilder()
+        }
+    }
+}
+
+class UserBuilder {
+    private var id: UUID? = null
+    private var username: String? = null
+    private var password: String? = null
+    private var email: String? = null
+    private var role: RoleType = RoleType.MEMBER
+    private var enabled: Boolean = true
+    private var createdAt: LocalDateTime? = null
+    private var updatedAt: LocalDateTime? = null
+
+    fun id(id: UUID?) = apply { this.id = id }
+    fun username(username: String?) = apply { this.username = username }
+    fun password(password: String?) = apply { this.password = password }
+    fun email(email: String?) = apply { this.email = email }
+    fun role(role: RoleType) = apply { this.role = role }
+    fun enabled(enabled: Boolean) = apply { this.enabled = enabled }
+    fun createdAt(createdAt: LocalDateTime?) = apply { this.createdAt = createdAt }
+    fun updatedAt(updatedAt: LocalDateTime?) = apply { this.updatedAt = updatedAt }
+
+    fun build(): User {
+        // Validate required fields
+        val missingFields = mutableListOf<String>()
+        
+        if (username.isNullOrBlank()) {
+            missingFields.add("username")
+        }
+        if (password.isNullOrBlank()) {
+            missingFields.add("password")
+        }
+        if (email.isNullOrBlank()) {
+            missingFields.add("email")
+        }
+        
+        if (missingFields.isNotEmpty()) {
+            throw IllegalStateException("Missing required fields: ${missingFields.joinToString(", ")}")
+        }
+        
+        // Set createdAt to now if not explicitly provided
+        val finalCreatedAt = createdAt ?: LocalDateTime.now()
+        
+        return User(id, username!!, password!!, email!!, role, enabled, finalCreatedAt, updatedAt)
+    }
 }

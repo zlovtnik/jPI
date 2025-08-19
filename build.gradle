@@ -71,6 +71,7 @@ dependencies {
     implementation 'org.apache.camel.springboot:camel-spring-boot-starter:4.7.0'
     implementation 'org.apache.camel.springboot:camel-spring-rabbitmq-starter:4.7.0'
     implementation 'org.apache.camel.springboot:camel-jackson-starter:4.7.0'
+    implementation 'org.apache.camel.springboot:camel-sql-starter:4.7.0'
 
     // Security - JWT Support
     implementation 'io.jsonwebtoken:jjwt-api:0.12.3'

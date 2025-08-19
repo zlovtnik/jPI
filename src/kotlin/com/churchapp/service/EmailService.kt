@@ -7,10 +7,15 @@ import arrow.fx.coroutines.parMap
 import com.churchapp.entity.Member
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @Service
-class EmailService {
+class EmailService(
+    @Value("\${app.publicBaseUrl}") private val publicBaseUrl: String
+) {
 
     private val logger = LoggerFactory.getLogger(EmailService::class.java)
 
@@ -38,6 +43,23 @@ class EmailService {
         val subject = "Welcome to Our Church Community!"
         val body = buildWelcomeEmailBody(member)
         return sendEmail(member.email, subject, body)
+    }
+
+    // Overloaded method for backwards compatibility with tests
+    @JvmOverloads
+    fun sendWelcomeEmail(email: String, name: String): Either<EmailError, Unit> {
+        val subject = "Welcome to Our Church Community!"
+        val body = "Dear $name,\n\nWelcome to our church community!"
+        return sendEmail(email, subject, body).map { Unit }
+    }
+
+    // Send password reset email
+    fun sendPasswordResetEmail(email: String, token: String): Either<EmailError, Unit> {
+        val subject = "Password Reset Request"
+        val encodedToken = URLEncoder.encode(token, StandardCharsets.UTF_8.name())
+        val resetUrl = "$publicBaseUrl/reset?token=$encodedToken"
+        val body = "Click here to reset your password: $resetUrl"
+        return sendEmail(email, subject, body).map { Unit }
     }
 
     // Send donation thank you email

@@ -1,159 +1,88 @@
 package com.churchapp.service
 
-import arrow.core.Either
-import arrow.core.Option
-import arrow.core.None
-import arrow.core.Some
-import arrow.core.left
-import arrow.core.right
 import com.churchapp.entity.Donation
 import com.churchapp.entity.Member
 import com.churchapp.entity.enums.DonationType
 import com.churchapp.repository.DonationRepository
 import org.slf4j.LoggerFactory
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
 
 @Service
 class DonationService(
     private val donationRepository: DonationRepository,
-    private val memberService: MemberService
+    private val eventPublisher: ApplicationEventPublisher
 ) {
 
     private val logger = LoggerFactory.getLogger(DonationService::class.java)
 
-    // Create donation with functional validation and member lookup
-    fun createDonation(donation: Donation): Either<DonationError, Donation> {
-        val validationResult = validateDonation(donation)
-        return when (validationResult) {
-            is Either.Left -> validationResult
-            is Either.Right -> {
-                val validDonation = validationResult.value
-                val memberOption = validDonation.getMemberOption()
+    // Create donation with functional validation
+    fun createDonation(donation: Donation): Either<Exception, Donation> = try {
+        // Basic validation
+    require(donation.amount.compareTo(BigDecimal.ZERO) > 0) { "Donation amount must be positive" }
 
-                when (memberOption) {
-                    is None -> {
-                        // Anonymous donation, proceed to save
-                        try {
-                            donationRepository.save(validDonation).right()
-                        } catch (e: Exception) {
-                            logger.error("Error creating donation", e)
-                            DonationError.DatabaseError(e.message ?: "Failed to create donation").left()
-                        }
-                    }
-                    is Some -> {
-                        // Verify member exists
-                        val member = memberOption.value
-                        val memberResult = memberService.findById(member.id!!)
-                        when (memberResult) {
-                            is Either.Left -> DonationError.MemberNotFound(member.id!!).left()
-                            is Either.Right -> {
-                                try {
-                                    donationRepository.save(validDonation).right()
-                                } catch (e: Exception) {
-                                    logger.error("Error creating donation", e)
-                                    DonationError.DatabaseError(e.message ?: "Failed to create donation").left()
-                                }
-                            }
-                        }
-                    }
-                }
+        val savedDonation = donationRepository.save(donation)
+        eventPublisher.publishEvent(DonationCreatedEvent(savedDonation))
+        savedDonation.right()
+    } catch (e: Exception) {
+        logger.error("Error creating donation", e)
+        e.left()
+    }
+
+    // Update donation
+    fun updateDonation(donation: Donation): Either<Exception, Donation> = try {
+        require(donation.id != null) { "Donation ID is required for update" }
+        require(donation.amount.compareTo(BigDecimal.ZERO) > 0) { "Donation amount must be positive" }
+
+        donationRepository.save(donation).right()
+    } catch (e: Exception) {
+        logger.error("Error updating donation", e)
+        e.left()
+    }
+
+    // Get all donations
+    fun getAllDonations(): List<Donation> {
+        return donationRepository.findAll()
+    }
+
+    // Get donation by ID
+    fun getDonationById(id: UUID): Optional<Donation> {
+        return donationRepository.findById(id)
+    }
+
+    // Get donations by member
+    fun getDonationsByMember(memberId: UUID): List<Donation> {
+        return donationRepository.findByMemberId(memberId)
+    }
+
+    fun getTotalDonationsByMember(memberId: UUID): BigDecimal {
+        return donationRepository.findByMemberId(memberId)
+            .fold(BigDecimal.ZERO) { acc, donation ->
+                acc.add(requireNotNull(donation.amount) { "Donation amount is required" })
             }
-        }
     }
 
-    // Get donations by member with functional approach
-    fun getDonationsByMember(memberId: UUID): Either<DonationError, List<Donation>> = try {
-        donationRepository.findByMemberId(memberId).right()
+    // Get donations by date range
+    fun getDonationsByDateRange(startDate: LocalDateTime, endDate: LocalDateTime): List<Donation> {
+        return donationRepository.findByDonationDateBetween(startDate, endDate)
+    }
+
+    // Delete donation
+    fun deleteDonation(id: UUID): Either<Exception, Unit> = try {
+        donationRepository.deleteById(id)
+        Unit.right()
     } catch (e: Exception) {
-        logger.error("Error retrieving donations for member: $memberId", e)
-        DonationError.DatabaseError(e.message ?: "Failed to retrieve donations").left()
+        logger.error("Error deleting donation", e)
+        e.left()
     }
 
-    // Get donations by type and date range
-    fun getDonationsByTypeAndDateRange(
-        donationType: DonationType,
-        startDate: LocalDateTime,
-        endDate: LocalDateTime
-    ): Either<DonationError, List<Donation>> = try {
-        donationRepository.findByDonationTypeAndDonationDateBetween(donationType, startDate, endDate).right()
-    } catch (e: Exception) {
-        logger.error("Error retrieving donations by type and date range", e)
-        DonationError.DatabaseError(e.message ?: "Failed to retrieve donations").left()
-    }
-
-    // Calculate total donations
-    fun calculateTotalDonations(donations: List<Donation>): BigDecimal =
-        donations.fold(BigDecimal.ZERO) { acc, donation -> acc + donation.amount }
-
-    // Get donation statistics
-    fun getDonationStatistics(
-        startDate: LocalDateTime,
-        endDate: LocalDateTime
-    ): Either<DonationError, DonationStatistics> {
-        return try {
-            val results = mutableMapOf<DonationType, BigDecimal>()
-
-            for (donationType in DonationType.values()) {
-                val donationsResult = getDonationsByTypeAndDateRange(donationType, startDate, endDate)
-                when (donationsResult) {
-                    is Either.Left -> return donationsResult
-                    is Either.Right -> {
-                        val total = calculateTotalDonations(donationsResult.value)
-                        results[donationType] = total
-                    }
-                }
-            }
-
-            val totalAmount = results.values.fold(BigDecimal.ZERO) { acc, amount -> acc + amount }
-
-            DonationStatistics(
-                totalAmount = totalAmount,
-                donationsByType = results,
-                period = DateRange(startDate, endDate)
-            ).right()
-        } catch (e: Exception) {
-            logger.error("Error calculating donation statistics", e)
-            DonationError.DatabaseError(e.message ?: "Failed to calculate statistics").left()
-        }
-    }
-
-    // Functional validation
-    private fun validateDonation(donation: Donation): Either<DonationError, Donation> = when {
-        donation.amount <= BigDecimal.ZERO ->
-            DonationError.ValidationError("Donation amount must be greater than 0").left()
-        donation.donationDate.isAfter(LocalDateTime.now()) ->
-            DonationError.ValidationError("Donation date cannot be in the future").left()
-        else -> donation.right()
-    }
-
-    // Find donation by ID with Option
-    fun findByIdOption(id: UUID): Option<Donation> = try {
-        val optional = donationRepository.findById(id)
-        Option.fromNullable(optional.orElse(null))
-    } catch (e: Exception) {
-        logger.error("Error finding donation by id: $id", e)
-        None
-    }
+    // Event for donation creation
+    data class DonationCreatedEvent(val donation: Donation)
 }
-
-// Sealed class for donation errors
-sealed class DonationError(val message: String) {
-    data class ValidationError(val details: String) : DonationError("Validation error: $details")
-    data class MemberNotFound(val memberId: UUID) : DonationError("Member with id $memberId not found")
-    data class DatabaseError(val details: String) : DonationError("Database error: $details")
-}
-
-// Data classes for statistics
-data class DonationStatistics(
-    val totalAmount: BigDecimal,
-    val donationsByType: Map<DonationType, BigDecimal>,
-    val period: DateRange
-)
-
-data class DateRange(
-    val startDate: LocalDateTime,
-    val endDate: LocalDateTime
-)
