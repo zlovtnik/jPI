@@ -7,10 +7,15 @@ import arrow.fx.coroutines.parMap
 import com.churchapp.entity.Member
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @Service
-class EmailService {
+class EmailService(
+    @Value("\${app.publicBaseUrl}") private val publicBaseUrl: String
+) {
 
     private val logger = LoggerFactory.getLogger(EmailService::class.java)
 
@@ -51,7 +56,9 @@ class EmailService {
     // Send password reset email
     fun sendPasswordResetEmail(email: String, token: String): Either<EmailError, Unit> {
         val subject = "Password Reset Request"
-        val body = "Click here to reset your password: /reset?token=$token"
+        val encodedToken = URLEncoder.encode(token, StandardCharsets.UTF_8.name())
+        val resetUrl = "$publicBaseUrl/reset?token=$encodedToken"
+        val body = "Click here to reset your password: $resetUrl"
         return sendEmail(email, subject, body).map { Unit }
     }
 

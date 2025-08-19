@@ -57,8 +57,6 @@ data class Group(
 
     fun getUpdatedAtOption(): Option<LocalDateTime> = Option.fromNullable(updatedAt)
 
-    fun getIsActive(): Boolean = isActive
-
     // Check if group is full
     fun isFull(): Boolean = when (val maxMembersOption = getMaxMembersOption()) {
         is None -> false

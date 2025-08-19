@@ -60,6 +60,9 @@ dependencies {
     implementation 'io.arrow-kt:arrow-core:1.2.1'
     implementation 'io.arrow-kt:arrow-fx-coroutines:1.2.1'
 
+    // Vavr for functional programming (Java interop)
+    implementation 'io.vavr:vavr:0.10.4'
+
     // Spring Boot Starters
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
