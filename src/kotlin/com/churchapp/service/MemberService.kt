@@ -82,7 +82,7 @@ class MemberService(
             is Either.Left -> existingMemberResult
             is Either.Right -> {
                 val existingMember = existingMemberResult.value
-                val validationResult = validateMember(updatedMember.copy(id = existingMember.id))
+                val validationResult = validateMember(updatedMember.toBuilder().id(existingMember.id).build())
                 when (validationResult) {
                     is Either.Left -> validationResult
                     is Either.Right -> {
@@ -106,8 +106,8 @@ class MemberService(
             is Either.Left -> memberResult
             is Either.Right -> {
                 val member = memberResult.value
-                try {
-                    memberRepository.save(member.copy(isActive = false)).right()
+                    try {
+                    memberRepository.save(member.toBuilder().isActive(false).build()).right()
                 } catch (e: Exception) {
                     logger.error("Error deactivating member: $id", e)
                     MemberError.DatabaseError(e.message ?: "Failed to deactivate member").left()

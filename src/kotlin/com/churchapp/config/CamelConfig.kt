@@ -84,27 +84,27 @@ class CamelConfig {
                         .to("bean:auditService?method=logEventRegistration")
                 .end()
             /**
-            * Configures API routes for user management operations.
-            * 
-            * This function sets up RESTful endpoints for user-related operations including:
-            * - User authentication and session management
-            * - User profile retrieval and updates
-            * - User creation and registration
-            * - User deletion and account management
-            * 
-            * All routes are prefixed with the base API path and include appropriate
-            * HTTP method mappings for CRUD operations.
-            * 
-            * @receiver Application The Ktor application instance to configure routes on
-            */
+             * Configures API routes for user management operations.
+             *
+             * This function sets up RESTful endpoints for user-related operations including:
+             * - User authentication and session management
+             * - User profile retrieval and updates
+             * - User creation and registration
+             * - User deletion and account management
+             *
+             * All routes are prefixed with the base API path and include appropriate
+             * HTTP method mappings for CRUD operations.
+             *
+             * @receiver Application The Ktor application instance to configure routes on
+             */
             from("direct:GetMemberDetails")
                     .log("GetMemberDetails invoked: \${headers}")
                 // Prefer direct SQL lookup by memberId or email
                 .choice()
                     .`when`(header("memberId").isNotNull())
-                        .to("sql:SELECT * FROM members WHERE id = :#memberId?dataSourceRef=dataSource&outputType=SelectList")
+                        .to("sql:SELECT * FROM members WHERE id = :#memberId?outputType=SelectList")
                     .`when`(header("email").isNotNull())
-                        .to("sql:SELECT * FROM members WHERE email = :#email?dataSourceRef=dataSource&outputType=SelectList")
+                        .to("sql:SELECT * FROM members WHERE email = :#email?outputType=SelectList")
                     .otherwise()
                         // fall back to stored-proc path
                         .setHeader("procedureName", constant("GetMemberDetails"))
@@ -119,7 +119,12 @@ class CamelConfig {
                 // Returns donation summary rows for a memberId
                 .choice()
                     .`when`(header("memberId").isNotNull())
-                        .to("sql:SELECT member_id, SUM(amount) as total, COUNT(*) as count FROM donations WHERE member_id = :#memberId GROUP BY member_id?dataSourceRef=dataSource&outputType=SelectList")
+                        .to("""sql:SELECT member_id, 
+                            SUM(amount) as total, 
+                            COUNT(*) as count 
+                            FROM donations 
+                            WHERE member_id = :#memberId 
+                            GROUP BY member_id?outputType=SelectList""".trimIndent())
                     .otherwise()
                         .setHeader("procedureName", constant("GetMemberDonationSummary"))
                         .to("direct:callProcedure")
@@ -131,7 +136,16 @@ class CamelConfig {
 
             from("direct:GetTopDonors")
                 // Simple SQL for top donors by total amount
-                .to("sql:SELECT m.id as member_id, m.first_name, m.last_name, SUM(d.amount) as total FROM donations d JOIN members m ON d.member_id = m.id GROUP BY m.id ORDER BY total DESC LIMIT 10?dataSourceRef=dataSource&outputType=SelectList")
+                .to("""
+                    sql:SELECT m.id as member_id, m.first_name, m.last_name, 
+                        SUM(d.amount) as total 
+                    FROM donations d 
+                    JOIN members m ON d.member_id = m.id 
+                    GROUP BY m.id 
+                    ORDER BY total DESC 
+                    LIMIT 10?outputType=SelectList
+                    """.trimIndent()
+                )
 
             from("direct:RegisterMemberForEvent")
                 .setHeader("procedureName", constant("RegisterMemberForEvent"))
@@ -153,7 +167,10 @@ class CamelConfig {
                 .choice()
                     .`when`(header("q").isNotNull())
                         .setHeader("qEsc", simple("%${'$'}{header.q}%"))
-                        .to("sql:SELECT * FROM members WHERE first_name LIKE :#qEsc OR last_name LIKE :#qEsc OR email LIKE :#qEsc?dataSourceRef=dataSource&outputType=SelectList")
+                        .to("""sql:SELECT * FROM members 
+                            WHERE first_name LIKE :#qEsc 
+                            OR last_name LIKE :#qEsc 
+                            OR email LIKE :#qEsc?outputType=SelectList""")
                     .otherwise()
                         .setHeader("procedureName", constant("SearchMembers"))
                         .to("direct:callProcedure")
@@ -169,12 +186,12 @@ class CamelConfig {
                 .choice()
                     .`when`(header("salary").isNotNull())
                         // If salary is provided, call record_tithe directly with salary
-                        .to("sql:CALL record_tithe(:#memberId, :#salary, :#paymentMethod)?dataSourceRef=dataSource&outputType=SelectOne")
+                        .to("sql:CALL record_tithe(:#memberId, :#salary, :#paymentMethod)?outputType=SelectOne")
                         // extract donation_id from the returned row
                         .setBody(simple("${'$'}{body[donation_id]}"))
                     .`when`(header("memberId").isNotNull())
                         // If only memberId provided, try helper procedure that reads salary from members table
-                        .to("sql:CALL record_tithe_from_member(:#memberId, :#paymentMethod)?dataSourceRef=dataSource&outputType=SelectOne")
+                        .to("sql:CALL record_tithe_from_member(:#memberId, :#paymentMethod)?outputType=SelectOne")
                         .setBody(simple("${'$'}{body[donation_id]}"))
                     .otherwise()
                         // Fallback: delegate to generic procedure caller bean

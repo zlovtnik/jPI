@@ -118,7 +118,7 @@ class DatabaseService(
                         }
                         rows
                     }
-                    is java.util.List<*> -> v
+                    is List<*> -> v
                     else -> v
                 }
             }

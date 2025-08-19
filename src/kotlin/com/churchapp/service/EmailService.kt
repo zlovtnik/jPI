@@ -46,7 +46,6 @@ class EmailService(
     }
 
     // Overloaded method for backwards compatibility with tests
-    @JvmOverloads
     fun sendWelcomeEmail(email: String, name: String): Either<EmailError, Unit> {
         val subject = "Welcome to Our Church Community!"
         val body = "Dear $name,\n\nWelcome to our church community!"

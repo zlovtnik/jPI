@@ -55,6 +55,9 @@ jwt:
   secret: mySecretKey1234567890123456789012345678901234567890
   expiration: 86400000 # 24 hours in milliseconds
 
+app:
+  publicBaseUrl: http://localhost:8080
+
 logging:
   level:
     com.churchapp: DEBUG

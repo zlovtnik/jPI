@@ -16,15 +16,21 @@ java {
 
 kotlin {
     jvmToolchain(17)
+    
+    // Configure compiler options
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+        freeCompilerArgs.add("-Xjvm-default=all")
+    }
 }
 
 sourceSets {
     main {
         kotlin {
-            srcDirs = ['src/kotlin']
+            srcDirs = ['src/kotlin', 'src/main/kotlin']
         }
         java {
-            srcDirs = ['src/java']
+            srcDirs = ['src/java', 'build/generated/source/kapt/main', 'build/generated/source/kaptKotlin/main']
         }
         resources {
             srcDirs = ['src/resources']
@@ -35,10 +41,17 @@ sourceSets {
             srcDirs = ['src/test/kotlin']
         }
         java {
-            srcDirs = ['src/test/java']
+            srcDirs = ['src/test/java', 'build/generated/source/kapt/test', 'build/generated/source/kaptKotlin/test']
+        }
+        resources {
+            srcDirs = ['src/test/resources']
         }
     }
 }
+
+// Ensure Kotlin is compiled before Java in both main and test
+compileTestJava.dependsOn compileTestKotlin
+compileJava.dependsOn compileKotlin
 
 configurations {
     compileOnly {

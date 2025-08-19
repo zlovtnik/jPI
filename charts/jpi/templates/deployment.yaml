@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "jpi.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "jpi.name" . }}
+    helm.sh/chart: {{ include "jpi.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "jpi.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "jpi.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ include "jpi.name" . }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.port }}
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+          resources: {{ toYaml .Values.resources | nindent 12 }}
+  {{- if .Values.image.pullSecrets }}
+  imagePullSecrets:
+    {{- /* render the list under imagePullSecrets at correct indent */}}
+{{ toYaml .Values.image.pullSecrets | nindent 8 }}
+  {{- else }}
+  imagePullSecrets: []
+  {{- end }}
+  {{- if .Values.nodeSelector }}
+  nodeSelector:
+{{ toYaml .Values.nodeSelector | nindent 8 }}
+  {{- end }}
+  {{- if .Values.tolerations }}
+  tolerations:
+{{ toYaml .Values.tolerations | nindent 8 }}
+  {{- end }}
+  {{- if .Values.affinity }}
+  affinity:
+{{ toYaml .Values.affinity | nindent 8 }}
+  {{- end }}

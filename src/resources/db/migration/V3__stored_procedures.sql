@@ -6,6 +6,7 @@ DELIMITER //
 -- 1. Member Management Procedures
 
 -- Get complete member information with family details
+DROP PROCEDURE IF EXISTS GetMemberDetails //
 CREATE PROCEDURE GetMemberDetails(IN p_member_id INT)
 BEGIN
     SELECT 
@@ -34,6 +35,7 @@ BEGIN
 END //
 
 -- Add new member to existing family or create new family
+DROP PROCEDURE IF EXISTS AddMemberToFamily //
 CREATE PROCEDURE AddMemberToFamily(
     IN p_first_name VARCHAR(100),
     IN p_last_name VARCHAR(100),
@@ -83,6 +85,7 @@ END //
 -- 2. Donation Management Procedures
 
 -- Get donation summary for a member
+DROP PROCEDURE IF EXISTS GetMemberDonationSummary //
 CREATE PROCEDURE GetMemberDonationSummary(
     IN p_member_id INT,
     IN p_year INT
@@ -104,6 +107,7 @@ BEGIN
 END //
 
 -- Generate annual giving statement
+DROP PROCEDURE IF EXISTS GenerateGivingStatement //
 CREATE PROCEDURE GenerateGivingStatement(
     IN p_member_id INT,
     IN p_year INT
@@ -132,6 +136,7 @@ BEGIN
 END //
 
 -- Get top donors for a period
+DROP PROCEDURE IF EXISTS GetTopDonors //
 CREATE PROCEDURE GetTopDonors(
     IN p_start_date DATE,
     IN p_end_date DATE,
@@ -156,6 +161,7 @@ END //
 -- 3. Event Management Procedures
 
 -- Register member for event with capacity check
+DROP PROCEDURE IF EXISTS RegisterMemberForEvent //
 CREATE PROCEDURE RegisterMemberForEvent(
     IN p_event_id INT,
     IN p_member_id INT,
@@ -211,6 +217,7 @@ BEGIN
 END //
 
 -- Get event attendance statistics
+DROP PROCEDURE IF EXISTS GetEventAttendanceStats //
 CREATE PROCEDURE GetEventAttendanceStats(IN p_event_id INT)
 BEGIN
     SELECT 
@@ -231,6 +238,7 @@ END //
 -- 4. Group Management Procedures
 
 -- Add member to group with capacity check
+DROP PROCEDURE IF EXISTS AddMemberToGroup //
 CREATE PROCEDURE AddMemberToGroup(
     IN p_group_id INT,
     IN p_member_id INT
@@ -278,6 +286,7 @@ BEGIN
 END //
 
 -- Get group membership details
+DROP PROCEDURE IF EXISTS GetGroupMembership //
 CREATE PROCEDURE GetGroupMembership(IN p_group_id INT)
 BEGIN
     SELECT 
@@ -314,6 +323,7 @@ END //
 -- 5. Reporting Procedures
 
 -- Generate monthly activity report
+DROP PROCEDURE IF EXISTS GenerateMonthlyReport //
 CREATE PROCEDURE GenerateMonthlyReport(
     IN p_year INT,
     IN p_month INT
@@ -352,6 +362,7 @@ BEGIN
 END //
 
 -- Search members by various criteria
+DROP PROCEDURE IF EXISTS SearchMembers //
 CREATE PROCEDURE SearchMembers(
     IN p_search_term VARCHAR(255),
     IN p_search_type ENUM('name', 'email', 'phone', 'all')

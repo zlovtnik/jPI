@@ -1,8 +1,8 @@
 package com.churchapp.entity
 
 import arrow.core.Option
-import arrow.core.some
 import arrow.core.none
+import arrow.core.some
 import jakarta.persistence.*
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
@@ -10,9 +10,12 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
+// file-private regex used by Member.Builder for email validation
+private val EMAIL_REGEX = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
+
 @Entity
 @Table(name = "members")
-data class Member(
+class Member(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID? = null,
@@ -61,103 +64,126 @@ data class Member(
     @Column(name = "updated_at")
     val updatedAt: LocalDateTime? = null
 ) {
-    // Computed property using Arrow Option
     val fullName: String
         get() = "$firstName $lastName"
 
-    // Arrow Option helpers for safe nullable access
     fun getIdOption(): Option<UUID> = id?.some() ?: none()
-
     fun getPhoneNumberOption(): Option<String> = phoneNumber?.some() ?: none()
-
     fun getDateOfBirthOption(): Option<LocalDate> = dateOfBirth?.some() ?: none()
-
     fun getAddressOption(): Option<String> = address?.some() ?: none()
-
     fun getBaptismDateOption(): Option<LocalDate> = baptismDate?.some() ?: none()
-
     fun getFamilyOption(): Option<Family> = family?.some() ?: none()
-
     fun getUserOption(): Option<User> = user?.some() ?: none()
-
     fun getUpdatedAtOption(): Option<LocalDateTime> = updatedAt?.some() ?: none()
 
     companion object {
         @JvmStatic
-        fun builder(): MemberBuilder {
-            return MemberBuilder()
-        }
+        fun builder(): Builder = Builder()
+
+        @JvmStatic
+        fun builderFrom(existing: Member): Builder = Builder()
+            .id(existing.id)
+            .firstName(existing.firstName)
+            .lastName(existing.lastName)
+            .email(existing.email)
+            .phoneNumber(existing.phoneNumber)
+            .dateOfBirth(existing.dateOfBirth)
+            .address(existing.address)
+            .membershipDate(existing.membershipDate)
+            .baptismDate(existing.baptismDate)
+            .isActive(existing.isActive)
+            .family(existing.family)
+            .user(existing.user)
+            .createdAt(existing.createdAt)
+            .updatedAt(existing.updatedAt)
     }
-}
 
-class MemberBuilder {
-    private var id: UUID? = null
-    private var firstName: String = ""
-    private var lastName: String = ""
-    private var email: String = ""
-    private var phoneNumber: String? = null
-    private var dateOfBirth: LocalDate? = null
-    private var address: String? = null
-    private var membershipDate: LocalDate = LocalDate.now()
-    private var baptismDate: LocalDate? = null
-    private var isActive: Boolean = true
-    private var family: Family? = null
-    private var user: User? = null
-    private var createdAt: LocalDateTime = LocalDateTime.now()
-    private var updatedAt: LocalDateTime? = null
+    fun toBuilder(): Builder = Builder()
+        .id(id)
+        .firstName(firstName)
+        .lastName(lastName)
+        .email(email)
+        .phoneNumber(phoneNumber)
+        .dateOfBirth(dateOfBirth)
+        .address(address)
+        .membershipDate(membershipDate)
+        .baptismDate(baptismDate)
+        .isActive(isActive)
+        .family(family)
+        .user(user)
+        .createdAt(createdAt)
+        .updatedAt(updatedAt)
 
-    fun id(id: UUID?) = apply { this.id = id }
-    fun firstName(firstName: String) = apply { this.firstName = firstName }
-    fun lastName(lastName: String) = apply { this.lastName = lastName }
-    fun email(email: String) = apply { this.email = email }
-    fun phoneNumber(phoneNumber: String?) = apply { this.phoneNumber = phoneNumber }
-    fun dateOfBirth(dateOfBirth: LocalDate?) = apply { this.dateOfBirth = dateOfBirth }
-    fun address(address: String?) = apply { this.address = address }
-    fun membershipDate(membershipDate: LocalDate) = apply { this.membershipDate = membershipDate }
-    fun baptismDate(baptismDate: LocalDate?) = apply { this.baptismDate = baptismDate }
-    fun isActive(isActive: Boolean) = apply { this.isActive = isActive }
-    fun family(family: Family?) = apply { this.family = family }
-    fun user(user: User?) = apply { this.user = user }
-    fun createdAt(createdAt: LocalDateTime) = apply { this.createdAt = createdAt }
-    fun updatedAt(updatedAt: LocalDateTime?) = apply { this.updatedAt = updatedAt }
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Member) return false
+        if (id == null || other.id == null) return false
+        return id == other.id
+    }
 
-    fun build(): Member {
-        // Normalize required fields
-        val normFirstName = firstName.trim()
-        val normLastName = lastName.trim()
-        val normEmail = email.trim().lowercase()
+    override fun hashCode(): Int = id?.hashCode() ?: System.identityHashCode(this)
 
-        // Basic validations
-        if (normFirstName.isBlank()) {
-            throw IllegalStateException("First name cannot be blank")
+    override fun toString(): String = "Member(id=$id, fullName=$fullName, email=$email)"
+
+    class Builder internal constructor() {
+        private var id: UUID? = null
+        private var firstName: String = ""
+        private var lastName: String = ""
+        private var email: String = ""
+        private var phoneNumber: String? = null
+        private var dateOfBirth: LocalDate? = null
+        private var address: String? = null
+        private var membershipDate: LocalDate = LocalDate.now()
+        private var baptismDate: LocalDate? = null
+        private var isActive: Boolean = true
+        private var family: Family? = null
+        private var user: User? = null
+        private var createdAt: LocalDateTime = LocalDateTime.now()
+        private var updatedAt: LocalDateTime? = null
+
+        fun id(id: UUID?) = apply { this.id = id }
+        fun firstName(firstName: String) = apply { this.firstName = firstName }
+        fun lastName(lastName: String) = apply { this.lastName = lastName }
+        fun email(email: String) = apply { this.email = email }
+        fun phoneNumber(phoneNumber: String?) = apply { this.phoneNumber = phoneNumber }
+        fun dateOfBirth(dateOfBirth: LocalDate?) = apply { this.dateOfBirth = dateOfBirth }
+        fun address(address: String?) = apply { this.address = address }
+        fun membershipDate(membershipDate: LocalDate) = apply { this.membershipDate = membershipDate }
+        fun baptismDate(baptismDate: LocalDate?) = apply { this.baptismDate = baptismDate }
+        fun isActive(isActive: Boolean) = apply { this.isActive = isActive }
+        fun family(family: Family?) = apply { this.family = family }
+        fun user(user: User?) = apply { this.user = user }
+        fun createdAt(createdAt: LocalDateTime) = apply { this.createdAt = createdAt }
+        fun updatedAt(updatedAt: LocalDateTime?) = apply { this.updatedAt = updatedAt }
+
+        fun build(): Member {
+            val normFirstName = firstName.trim()
+            val normLastName = lastName.trim()
+            val normEmail = email.trim().lowercase()
+
+            if (normFirstName.isBlank()) throw IllegalStateException("First name cannot be blank")
+            if (normLastName.isBlank()) throw IllegalStateException("Last name cannot be blank")
+            if (normEmail.isBlank() || !EMAIL_REGEX.matches(normEmail)) throw IllegalStateException("Invalid email: '$normEmail'")
+
+            val normPhone = phoneNumber?.trim()?.takeIf { it.isNotBlank() }
+            val normAddress = address?.trim()?.takeIf { it.isNotBlank() }
+
+            return Member(
+                id = id,
+                firstName = normFirstName,
+                lastName = normLastName,
+                email = normEmail,
+                phoneNumber = normPhone,
+                dateOfBirth = dateOfBirth,
+                address = normAddress,
+                membershipDate = membershipDate,
+                baptismDate = baptismDate,
+                isActive = isActive,
+                family = family,
+                user = user,
+                createdAt = createdAt,
+                updatedAt = updatedAt
+            )
         }
-        if (normLastName.isBlank()) {
-            throw IllegalStateException("Last name cannot be blank")
-        }
-        val emailRegex = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}")
-        if (normEmail.isBlank() || !emailRegex.matches(normEmail)) {
-            throw IllegalStateException("Invalid email: '$email'")
-        }
-
-        // Normalize optional fields: trim and convert blank -> null
-        val normPhone = phoneNumber?.trim()?.takeIf { it.isNotBlank() }
-        val normAddress = address?.trim()?.takeIf { it.isNotBlank() }
-
-        return Member(
-            id = id,
-            firstName = normFirstName,
-            lastName = normLastName,
-            email = normEmail,
-            phoneNumber = normPhone,
-            dateOfBirth = dateOfBirth,
-            address = normAddress,
-            membershipDate = membershipDate,
-            baptismDate = baptismDate,
-            isActive = isActive,
-            family = family,
-            user = user,
-            createdAt = createdAt,
-            updatedAt = updatedAt
-        )
     }
 }

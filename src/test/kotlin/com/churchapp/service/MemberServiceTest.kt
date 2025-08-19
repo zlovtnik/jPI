@@ -1,12 +1,7 @@
 package com.churchapp.service
 
-import arrow.core.Either
-import arrow.core.left
-import arrow.core.right
 import com.churchapp.entity.Member
 import com.churchapp.repository.MemberRepository
-import com.churchapp.service.MemberService
-import com.churchapp.service.MemberError
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -80,7 +75,7 @@ class MemberServiceTest {
     @Test
     fun `should find member by id successfully`() {
         val id = UUID.randomUUID()
-        member = member.copy(id = id)
+        member = Member.builderFrom(member).id(id).build()
         `when`(memberRepository.findById(id)).thenReturn(Optional.of(member))
 
         val result = memberService.findById(id)
@@ -115,9 +110,9 @@ class MemberServiceTest {
     @Test
     fun `should update member successfully`() {
         val id = UUID.randomUUID()
-        val existingMember = member.copy(id = id)
-        val updatedMember = member.copy(id = id, firstName = "Jane")
-        
+        val existingMember = Member.builderFrom(member).id(id).build()
+        val updatedMember = Member.builderFrom(member).id(id).firstName("Jane").build()
+
         `when`(memberRepository.findById(id)).thenReturn(Optional.of(existingMember))
         `when`(memberRepository.save(any(Member::class.java))).thenReturn(updatedMember)
         `when`(memberRepository.existsByEmail(anyString())).thenReturn(false)
@@ -173,9 +168,9 @@ class MemberServiceTest {
     @Test
     fun `should deactivate member successfully`() {
         val id = UUID.randomUUID()
-        val activeMember = member.copy(id = id, isActive = true)
-        val deactivatedMember = member.copy(id = id, isActive = false)
-        
+        val activeMember = Member.builderFrom(member).id(id).isActive(true).build()
+        val deactivatedMember = Member.builderFrom(member).id(id).isActive(false).build()
+
         `when`(memberRepository.findById(id)).thenReturn(Optional.of(activeMember))
         `when`(memberRepository.save(any(Member::class.java))).thenReturn(deactivatedMember)
 

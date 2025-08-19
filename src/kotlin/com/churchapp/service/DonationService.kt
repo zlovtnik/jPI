@@ -48,8 +48,11 @@ class DonationService(
     }
 
     // Get all donations
-    fun getAllDonations(): List<Donation> {
-        return donationRepository.findAll()
+    fun getAllDonations(): List<Donation> = try {
+        donationRepository.findAll()
+    } catch (e: Exception) {
+        logger.error("Error retrieving all donations", e)
+        emptyList()
     }
 
     // Get donation by ID
