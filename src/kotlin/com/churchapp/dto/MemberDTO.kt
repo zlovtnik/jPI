@@ -3,7 +3,10 @@ package com.churchapp.dto
 import java.time.LocalDate
 
 data class MemberDTO(
-    var id: Int? = null,
+import java.util.UUID
+
+data class MemberDTO(
+    var id: UUID? = null,
     var firstName: String = "",
     var lastName: String = "",
     var email: String = "",
