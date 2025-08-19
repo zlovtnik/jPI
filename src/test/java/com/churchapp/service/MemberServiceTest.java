@@ -2,7 +2,7 @@ package com.churchapp.service;
 
 import com.churchapp.entity.Member;
 import com.churchapp.repository.MemberRepository;
-import io.vavr.control.Try;
+import arrow.core.Either;
 import org.apache.camel.ProducerTemplate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,8 +12,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -34,15 +36,22 @@ class MemberServiceTest {
     
     @BeforeEach
     void setUp() {
-        testMember = Member.builder()
-            .id(1)
-            .firstName("John")
-            .lastName("Doe")
-            .email("john.doe@example.com")
-            .phone("555-1234")
-            .dateOfBirth(LocalDate.of(1990, 1, 1))
-            .membershipDate(LocalDate.now())
-            .build();
+        testMember = new Member(
+            UUID.randomUUID(),
+            "John",
+            "Doe",
+            "john.doe@example.com",
+            "555-1234",
+            LocalDate.of(1990, 1, 1),
+            "123 Main St",
+            LocalDate.now(),
+            null, // baptismDate
+            true, // isActive
+            null, // family
+            null, // user
+            LocalDateTime.now(), // createdAt
+            null  // updatedAt
+        );
     }
     
     @Test
@@ -55,7 +64,7 @@ class MemberServiceTest {
         
         // Then
         assertTrue(result.isSuccess());
-        assertEquals(testMember, result.get());
+        assertThat(result.get()).isEqualTo(testMember);
         verify(memberRepository).save(testMember);
         verify(camelProducer).sendBody("direct:memberCreated", testMember);
     }
@@ -197,3 +206,4 @@ class MemberServiceTest {
         assertEquals(testMember, result.head());
     }
 }
+

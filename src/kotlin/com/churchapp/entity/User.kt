@@ -32,7 +32,7 @@ data class User(
     val role: RoleType = RoleType.MEMBER,
 
     @Column(nullable = false)
-    private val enabled: Boolean = true,
+    private var enabled: Boolean = true,
 
     @Column(name = "created_at", nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
@@ -60,4 +60,39 @@ data class User(
     fun getIdOption(): Option<UUID> = id?.some() ?: none()
 
     fun getUpdatedAtOption(): Option<LocalDateTime> = updatedAt?.some() ?: none()
+
+    fun setActive(active: Boolean) {
+        enabled = active
+    }
+
+    companion object {
+        @JvmStatic
+        fun builder(): UserBuilder {
+            return UserBuilder()
+        }
+    }
+}
+
+class UserBuilder {
+    private var id: UUID? = null
+    private var username: String = ""
+    private var password: String = ""
+    private var email: String = ""
+    private var role: RoleType = RoleType.MEMBER
+    private var enabled: Boolean = true
+    private var createdAt: LocalDateTime = LocalDateTime.now()
+    private var updatedAt: LocalDateTime? = null
+
+    fun id(id: UUID?) = apply { this.id = id }
+    fun username(username: String) = apply { this.username = username }
+    fun password(password: String) = apply { this.password = password }
+    fun email(email: String) = apply { this.email = email }
+    fun role(role: RoleType) = apply { this.role = role }
+    fun enabled(enabled: Boolean) = apply { this.enabled = enabled }
+    fun createdAt(createdAt: LocalDateTime) = apply { this.createdAt = createdAt }
+    fun updatedAt(updatedAt: LocalDateTime?) = apply { this.updatedAt = updatedAt }
+
+    fun build(): User {
+        return User(id, username, password, email, role, enabled, createdAt, updatedAt)
+    }
 }

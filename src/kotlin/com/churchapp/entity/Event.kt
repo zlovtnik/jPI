@@ -59,6 +59,8 @@ data class Event(
 
     fun getMaxCapacityOption(): Option<Int> = Option.fromNullable(maxCapacity)
 
+    fun getIsActive(): Boolean = isActive
+
     fun getUpdatedAtOption(): Option<LocalDateTime> = Option.fromNullable(updatedAt)
 
     // Functional helper to check if event is full

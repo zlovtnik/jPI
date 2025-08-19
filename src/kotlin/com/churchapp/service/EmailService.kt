@@ -40,6 +40,21 @@ class EmailService {
         return sendEmail(member.email, subject, body)
     }
 
+    // Overloaded method for backwards compatibility with tests
+    @JvmOverloads
+    fun sendWelcomeEmail(email: String, name: String): Either<EmailError, Unit> {
+        val subject = "Welcome to Our Church Community!"
+        val body = "Dear $name,\n\nWelcome to our church community!"
+        return sendEmail(email, subject, body).map { Unit }
+    }
+
+    // Send password reset email
+    fun sendPasswordResetEmail(email: String, token: String): Either<EmailError, Unit> {
+        val subject = "Password Reset Request"
+        val body = "Click here to reset your password: /reset?token=$token"
+        return sendEmail(email, subject, body).map { Unit }
+    }
+
     // Send donation thank you email
     fun sendDonationThankYouEmail(member: Member, amount: String): Either<EmailError, EmailResult> {
         val subject = "Thank You for Your Generous Donation"

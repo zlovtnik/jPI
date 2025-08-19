@@ -4,6 +4,7 @@ import com.churchapp.entity.User;
 import com.churchapp.entity.enums.RoleType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import java.util.UUID;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.GrantedAuthority;
@@ -21,12 +22,12 @@ class ChurchUserPrincipalTest {
     @BeforeEach
     void setUp() {
         testUser = User.builder()
-            .id(1)
+            .id(UUID.randomUUID())
             .username("testuser")
             .password("password")
             .email("test@example.com")
             .role(RoleType.MEMBER)
-            .active(true)
+            .enabled(true)
             .build();
         
         userPrincipal = new ChurchUserPrincipal(testUser);

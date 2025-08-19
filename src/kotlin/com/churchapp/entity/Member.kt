@@ -81,4 +81,48 @@ data class Member(
     fun getUserOption(): Option<User> = user?.some() ?: none()
 
     fun getUpdatedAtOption(): Option<LocalDateTime> = updatedAt?.some() ?: none()
+
+    companion object {
+        @JvmStatic
+        fun builder(): MemberBuilder {
+            return MemberBuilder()
+        }
+    }
+}
+
+class MemberBuilder {
+    private var id: UUID? = null
+    private var firstName: String = ""
+    private var lastName: String = ""
+    private var email: String = ""
+    private var phoneNumber: String? = null
+    private var dateOfBirth: LocalDate? = null
+    private var address: String? = null
+    private var membershipDate: LocalDate = LocalDate.now()
+    private var baptismDate: LocalDate? = null
+    private var isActive: Boolean = true
+    private var family: Family? = null
+    private var user: User? = null
+    private var createdAt: LocalDateTime = LocalDateTime.now()
+    private var updatedAt: LocalDateTime? = null
+
+    fun id(id: UUID?) = apply { this.id = id }
+    fun firstName(firstName: String) = apply { this.firstName = firstName }
+    fun lastName(lastName: String) = apply { this.lastName = lastName }
+    fun email(email: String) = apply { this.email = email }
+    fun phoneNumber(phoneNumber: String?) = apply { this.phoneNumber = phoneNumber }
+    fun dateOfBirth(dateOfBirth: LocalDate?) = apply { this.dateOfBirth = dateOfBirth }
+    fun address(address: String?) = apply { this.address = address }
+    fun membershipDate(membershipDate: LocalDate) = apply { this.membershipDate = membershipDate }
+    fun baptismDate(baptismDate: LocalDate?) = apply { this.baptismDate = baptismDate }
+    fun isActive(isActive: Boolean) = apply { this.isActive = isActive }
+    fun family(family: Family?) = apply { this.family = family }
+    fun user(user: User?) = apply { this.user = user }
+    fun createdAt(createdAt: LocalDateTime) = apply { this.createdAt = createdAt }
+    fun updatedAt(updatedAt: LocalDateTime?) = apply { this.updatedAt = updatedAt }
+
+    fun build(): Member {
+        return Member(id, firstName, lastName, email, phoneNumber, dateOfBirth, address, 
+                     membershipDate, baptismDate, isActive, family, user, createdAt, updatedAt)
+    }
 }

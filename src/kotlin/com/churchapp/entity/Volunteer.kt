@@ -45,6 +45,8 @@ data class Volunteer(
 
     fun getEndDateOption(): Option<LocalDateTime> = Option.fromNullable(endDate)
 
+    fun getIsActive(): Boolean = isActive
+
     // Check if volunteer assignment is current
     fun isCurrent(): Boolean = isActive && when (val endDateOption = getEndDateOption()) {
         is None -> true
