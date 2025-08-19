@@ -1,10 +1,11 @@
 # Makefile for build & deploy operations for jPI
 # Usage: edit IMAGE and optionally NAMESPACE or set env vars when invoking make.
 
-IMAGE ?= ghcr.io/${GITHUB_OWNER:-your-org}/jpi
+GITHUB_OWNER ?= your-org
+IMAGE ?= ghcr.io/$(GITHUB_OWNER)/jpi
 TAG ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo local)
 NAMESPACE ?= default
-KUBE_CONFIG_PATH ?= $(HOME)/.kube/config
+KUBE_CONFIG_PATH ?= ./.kube/config
 
 .PHONY: help build push helm-render helm-deploy helm-lint decode-kubeconfig uninstall
 
@@ -40,10 +41,18 @@ helm-lint:
 decode-kubeconfig:
 	@if [ -n "$(KUBE_CONFIG_DATA)" ]; then \
 		echo "Decoding KUBE_CONFIG_DATA to $(KUBE_CONFIG_PATH)"; \
-		echo "$(KUBE_CONFIG_DATA)" | base64 --decode > $(KUBE_CONFIG_PATH); \
+		mkdir -p $(dir "$(KUBE_CONFIG_PATH)"); \
+		(umask 077; \
+		echo "$(KUBE_CONFIG_DATA)" | (base64 --decode 2>/dev/null || base64 -D 2>/dev/null || base64 -d 2>/dev/null) > "$(KUBE_CONFIG_PATH)") && \
+		chmod 600 "$(KUBE_CONFIG_PATH)"; \
+		if [ $$? -ne 0 ]; then \
+			echo "Error: Failed to decode KUBE_CONFIG_DATA"; \
+			exit 1; \
+		fi; \
 		echo "Wrote $(KUBE_CONFIG_PATH)"; \
 	else \
 		echo "KUBE_CONFIG_DATA is empty; set it to the base64-encoded kubeconfig to use this target."; \
+		exit 1; \
 	fi
 
 # Deploy the chart with helm (will decode KUBE_CONFIG_DATA if provided)

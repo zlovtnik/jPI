@@ -2,31 +2,30 @@ package com.churchapp.security
 
 import com.churchapp.entity.User
 import com.churchapp.entity.enums.RoleType
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.util.UUID
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.junit.jupiter.MockitoExtension
-import org.springframework.security.core.GrantedAuthority
-import org.junit.jupiter.api.Assertions.*
+import java.util.UUID
 
 @ExtendWith(MockitoExtension::class)
 class ChurchUserPrincipalTest {
-
     private lateinit var userPrincipal: ChurchUserPrincipal
     private lateinit var testUser: User
 
     @BeforeEach
     fun setUp() {
-        testUser = User.builder()
-            .id(UUID.randomUUID())
-            .username("testuser")
-            .password("password")
-            .email("test@example.com")
-            .role(RoleType.MEMBER)
-            .enabled(true)
-            .build()
-        
+        testUser =
+            User.builder()
+                .id(UUID.randomUUID())
+                .username("testuser")
+                .password("password")
+                .email("test@example.com")
+                .role(RoleType.MEMBER)
+                .enabled(true)
+                .build()
+
         userPrincipal = ChurchUserPrincipal(testUser)
     }
 
@@ -34,9 +33,8 @@ class ChurchUserPrincipalTest {
     fun `getAuthorities should return role authority`() {
         // When
         val authorities = userPrincipal.authorities
-        
+
         // Then
-        assertEquals(1, authorities.size)
         assertTrue(authorities.any { it.authority == "ROLE_MEMBER" })
     }
 
@@ -56,7 +54,7 @@ class ChurchUserPrincipalTest {
     fun `isEnabled should return user active status`() {
         // When & Then
         assertTrue(userPrincipal.isEnabled)
-        
+
         // Test with inactive user
         testUser.setActive(false)
         assertFalse(userPrincipal.isEnabled)

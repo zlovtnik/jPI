@@ -5,40 +5,39 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import org.apache.camel.Exchange
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.simple.SimpleJdbcCall
 import org.springframework.stereotype.Service
-import javax.sql.DataSource
 import java.sql.ResultSet
-import java.sql.Types
+import javax.sql.DataSource
 
 @Service
 class DatabaseService(
-    dataSource: DataSource
+    dataSource: DataSource,
 ) {
-
     private val logger = LoggerFactory.getLogger(DatabaseService::class.java)
     private val jdbcTemplate = JdbcTemplate(dataSource)
 
     // RowMapper that converts a ResultSet row into a Map<String, Any?>
-    private val rowToMap: RowMapper<Map<String, Any?>> = RowMapper { rs, _ ->
-        val md = rs.metaData
-        val row = mutableMapOf<String, Any?>()
-        for (i in 1..md.columnCount) {
-            row[md.getColumnLabel(i)] = rs.getObject(i)
+    private val rowToMap: RowMapper<Map<String, Any?>> =
+        RowMapper { rs, _ ->
+            val md = rs.metaData
+            val row = mutableMapOf<String, Any?>()
+            for (i in 1..md.columnCount) {
+                row[md.getColumnLabel(i)] = rs.getObject(i)
+            }
+            row
         }
-        row
-    }
 
     // Per-procedure SimpleJdbcCall configurators. Use this to declare OUT params or returningResultSet.
-    private val procedureConfigurators: Map<String, (SimpleJdbcCall) -> SimpleJdbcCall> = mapOf(
-        // Example: procedures that return a result set / cursor
-        "GetMemberDonationSummary" to { call -> call.returningResultSet("result", rowToMap) },
-        "GetTopDonors" to { call -> call.returningResultSet("result", rowToMap) },
-        "SearchMembers" to { call -> call.returningResultSet("result", rowToMap) }
-        // Add more entries here for procedures with OUT params or special mappings
-    )
+    private val procedureConfigurators: Map<String, (SimpleJdbcCall) -> SimpleJdbcCall> =
+        mapOf(
+            // Example: procedures that return a result set / cursor
+            "GetMemberDonationSummary" to { call -> call.returningResultSet("result", rowToMap) },
+            "GetTopDonors" to { call -> call.returningResultSet("result", rowToMap) },
+            "SearchMembers" to { call -> call.returningResultSet("result", rowToMap) },
+            // Add more entries here for procedures with OUT params or special mappings
+        )
 
     /**
      * Generic stored-procedure caller for Camel routes.
@@ -102,26 +101,27 @@ class DatabaseService(
             val rawResult: Map<String, Any?> = simpleCall.execute(paramSource)
 
             // Normalize result: if any value is a ResultSet / Cursor-like, convert to list of maps
-            val normalized = rawResult.mapValues { (_, v) ->
-                when (v) {
-                    is ResultSet -> {
-                        // Convert ResultSet to list of maps
-                        val rows = mutableListOf<Map<String, Any?>>()
-                        val rs = v
-                        val md = rs.metaData
-                        while (rs.next()) {
-                            val row = mutableMapOf<String, Any?>()
-                            for (i in 1..md.columnCount) {
-                                row[md.getColumnLabel(i)] = rs.getObject(i)
+            val normalized =
+                rawResult.mapValues { (_, v) ->
+                    when (v) {
+                        is ResultSet -> {
+                            // Convert ResultSet to list of maps
+                            val rows = mutableListOf<Map<String, Any?>>()
+                            val rs = v
+                            val md = rs.metaData
+                            while (rs.next()) {
+                                val row = mutableMapOf<String, Any?>()
+                                for (i in 1..md.columnCount) {
+                                    row[md.getColumnLabel(i)] = rs.getObject(i)
+                                }
+                                rows.add(row)
                             }
-                            rows.add(row)
+                            rows
                         }
-                        rows
+                        is List<*> -> v
+                        else -> v
                     }
-                    is List<*> -> v
-                    else -> v
                 }
-            }
 
             // Set the result as the outgoing body
             message.body = normalized

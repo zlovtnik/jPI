@@ -5,5 +5,5 @@ enum class RoleType(val description: String) {
     PASTOR("Church pastor with elevated privileges"),
     MEMBER("Regular church member"),
     VOLUNTEER("Church volunteer"),
-    VISITOR("Church visitor")
+    VISITOR("Church visitor"),
 }

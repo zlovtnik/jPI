@@ -8,7 +8,10 @@ import java.util.*
 @Repository
 interface MemberRepository : JpaRepository<Member, UUID> {
     fun findByEmail(email: String): Member?
+
     fun findByIsActive(isActive: Boolean): List<Member>
+
     fun existsByEmail(email: String): Boolean
+
     fun findByFamilyId(familyId: UUID): List<Member>
 }

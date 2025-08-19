@@ -2,10 +2,10 @@ package com.churchapp.service
 
 import com.churchapp.entity.Member
 import com.churchapp.repository.MemberRepository
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
 import org.mockito.Mockito.*
@@ -16,7 +16,6 @@ import java.util.*
 @ExtendWith(MockitoExtension::class)
 @DisplayName("MemberService Tests")
 class MemberServiceTest {
-
     @Mock
     private lateinit var memberRepository: MemberRepository
 
@@ -26,16 +25,17 @@ class MemberServiceTest {
     @BeforeEach
     fun setup() {
         memberService = MemberService(memberRepository)
-        
-        member = Member.builder()
-            .firstName("John")
-            .lastName("Doe")
-            .email("john.doe@example.com")
-            .phoneNumber("123-456-7890")
-            .address("123 Main St")
-            .dateOfBirth(LocalDate.of(1990, 1, 1))
-            .membershipDate(LocalDate.now())
-            .build()
+
+        member =
+            Member.builder()
+                .firstName("John")
+                .lastName("Doe")
+                .email("john.doe@example.com")
+                .phoneNumber("123-456-7890")
+                .address("123 Main St")
+                .dateOfBirth(LocalDate.of(1990, 1, 1))
+                .membershipDate(LocalDate.now())
+                .build()
     }
 
     @Test
@@ -52,7 +52,7 @@ class MemberServiceTest {
                 assertNotNull(savedMember)
                 assertEquals("John", savedMember.firstName)
                 verify(memberRepository).save(any(Member::class.java))
-            }
+            },
         )
     }
 
@@ -68,7 +68,7 @@ class MemberServiceTest {
                 assertNotNull(error)
                 assertTrue(error is MemberError.ValidationError)
             },
-            { fail("Expected error but got success") }
+            { fail("Expected error but got success") },
         )
     }
 
@@ -86,7 +86,7 @@ class MemberServiceTest {
             { foundMember ->
                 assertNotNull(foundMember)
                 assertEquals("John", foundMember.firstName)
-            }
+            },
         )
     }
 
@@ -103,7 +103,7 @@ class MemberServiceTest {
                 assertNotNull(error)
                 assertTrue(error is MemberError.NotFound)
             },
-            { fail("Expected error but got success") }
+            { fail("Expected error but got success") },
         )
     }
 
@@ -126,7 +126,7 @@ class MemberServiceTest {
                 assertNotNull(savedMember)
                 assertEquals("Jane", savedMember.firstName)
                 verify(memberRepository).save(any(Member::class.java))
-            }
+            },
         )
     }
 
@@ -143,7 +143,7 @@ class MemberServiceTest {
                 assertNotNull(error)
                 assertTrue(error is MemberError.NotFound)
             },
-            { fail("Expected error but got success") }
+            { fail("Expected error but got success") },
         )
     }
 
@@ -161,7 +161,7 @@ class MemberServiceTest {
                 assertNotNull(memberList)
                 assertEquals(1, memberList.size)
                 assertEquals("John", memberList.first().firstName)
-            }
+            },
         )
     }
 
@@ -183,7 +183,7 @@ class MemberServiceTest {
                 assertNotNull(savedMember)
                 assertFalse(savedMember.isActive)
                 verify(memberRepository).save(any(Member::class.java))
-            }
+            },
         )
     }
 }

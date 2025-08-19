@@ -13,7 +13,7 @@ data class MemberDTO(
     var membershipDate: LocalDate? = null,
     var address: String? = null,
     var familyId: Int? = null,
-    var active: Boolean = true
+    var active: Boolean = true,
 ) {
     companion object {
         @JvmStatic
@@ -36,14 +36,23 @@ class MemberDTOBuilder {
     private var active: Boolean = true
 
     fun id(id: UUID?) = apply { this.id = id }
+
     fun firstName(firstName: String) = apply { this.firstName = firstName }
+
     fun lastName(lastName: String) = apply { this.lastName = lastName }
+
     fun email(email: String) = apply { this.email = email }
+
     fun phone(phone: String?) = apply { this.phone = phone }
+
     fun dateOfBirth(dateOfBirth: LocalDate?) = apply { this.dateOfBirth = dateOfBirth }
+
     fun membershipDate(membershipDate: LocalDate?) = apply { this.membershipDate = membershipDate }
+
     fun address(address: String?) = apply { this.address = address }
+
     fun familyId(familyId: Int?) = apply { this.familyId = familyId }
+
     fun active(active: Boolean) = apply { this.active = active }
 
     fun build(): MemberDTO {

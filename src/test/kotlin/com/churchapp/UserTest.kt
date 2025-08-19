@@ -1,25 +1,24 @@
 package com.churchapp
 
 import com.churchapp.entity.User
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Assertions.*
-import java.time.LocalDateTime
+import org.junit.jupiter.api.Test
 import java.util.*
 
 @DisplayName("User Entity Tests")
 class UserTest {
-
     private lateinit var user: User
 
     @BeforeEach
     fun setup() {
-        user = User.builder()
-            .username("testuser")
-            .email("test@example.com")
-            .password("password123")
-            .build()
+        user =
+            User.builder()
+                .username("testuser")
+                .email("test@example.com")
+                .password("password123")
+                .build()
     }
 
     @Test
@@ -49,7 +48,7 @@ class UserTest {
     fun `should allow setting active status`() {
         user.setActive(false)
         assertFalse(user.isEnabled)
-        
+
         user.setActive(true)
         assertTrue(user.isEnabled)
     }

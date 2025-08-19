@@ -9,7 +9,13 @@ import java.util.*
 @Repository
 interface AttendanceRepository : JpaRepository<Attendance, UUID> {
     fun findByMemberId(memberId: UUID): List<Attendance>
+
     fun findByServiceDate(serviceDate: LocalDate): List<Attendance>
+
     fun findByServiceType(serviceType: String): List<Attendance>
-    fun findByServiceDateBetween(startDate: LocalDate, endDate: LocalDate): List<Attendance>
+
+    fun findByServiceDateBetween(
+        startDate: LocalDate,
+        endDate: LocalDate,
+    ): List<Attendance>
 }

@@ -1,30 +1,28 @@
 package com.churchapp.service
 
+import arrow.core.Either
 import com.churchapp.entity.Donation
 import com.churchapp.entity.Member
 import com.churchapp.entity.enums.DonationType
 import com.churchapp.repository.DonationRepository
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.ArgumentMatchers.any
 import org.mockito.InjectMocks
 import org.mockito.Mock
+import org.mockito.Mockito
+import org.mockito.Mockito.*
 import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.context.ApplicationEventPublisher
 import java.math.BigDecimal
-import java.time.LocalDateTime
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.*
-import arrow.core.Either
-import kotlin.Unit
-import org.junit.jupiter.api.Assertions.*
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito
-import org.mockito.Mockito.*
 
 @ExtendWith(MockitoExtension::class)
 class DonationServiceTest {
-
     @Mock
     private lateinit var donationRepository: DonationRepository
 
@@ -39,33 +37,35 @@ class DonationServiceTest {
 
     @BeforeEach
     fun setUp() {
-        testMember = Member(
-            UUID.randomUUID(),
-            "John",
-            "Doe",
-            "john.doe@example.com",
-            null,
-            null,
-            null,
-            LocalDate.now(),
-            null,
-            true,
-            null,
-            null,
-            LocalDateTime.now(),
-            LocalDateTime.now()
-        )
+        testMember =
+            Member(
+                UUID.randomUUID(),
+                "John",
+                "Doe",
+                "john.doe@example.com",
+                null,
+                null,
+                null,
+                LocalDate.now(),
+                null,
+                true,
+                null,
+                null,
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+            )
 
-        testDonation = Donation(
-            UUID.randomUUID(),
-            BigDecimal("100.00"),
-            DonationType.TITHE,
-            testMember,
-            false,
-            "Test Description",
-            LocalDateTime.now(),
-            LocalDateTime.now()
-        )
+        testDonation =
+            Donation(
+                UUID.randomUUID(),
+                BigDecimal("100.00"),
+                DonationType.TITHE,
+                testMember,
+                false,
+                "Test Description",
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+            )
     }
 
     @Test
@@ -101,16 +101,17 @@ class DonationServiceTest {
     @Test
     fun `updateDonation should return successful result when valid donation`() {
         // Given
-        val updatedDonation = Donation(
-            testDonation.id,
-            BigDecimal("150.00"),
-            testDonation.donationType,
-            testDonation.member,
-            testDonation.isAnonymous,
-            testDonation.notes,
-            testDonation.donationDate,
-            testDonation.createdAt
-        )
+        val updatedDonation =
+            Donation(
+                testDonation.id,
+                BigDecimal("150.00"),
+                testDonation.donationType,
+                testDonation.member,
+                testDonation.isAnonymous,
+                testDonation.notes,
+                testDonation.donationDate,
+                testDonation.createdAt,
+            )
         Mockito.`when`(donationRepository.save(any(Donation::class.java))).thenReturn(updatedDonation)
 
         // When

@@ -6,5 +6,5 @@ enum class DonationType(val description: String) {
     BUILDING_FUND("Building fund contribution"),
     MISSIONS("Missions support"),
     SPECIAL("Special occasion donation"),
-    OTHER("Other donation type")
+    OTHER("Other donation type"),
 }

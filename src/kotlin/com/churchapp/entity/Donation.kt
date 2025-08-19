@@ -1,7 +1,7 @@
 package com.churchapp.entity
 
-import arrow.core.Option
 import arrow.core.None
+import arrow.core.Option
 import arrow.core.Some
 import com.churchapp.entity.enums.DonationType
 import jakarta.persistence.*
@@ -17,31 +17,24 @@ data class Donation(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID? = null,
-
     @Column(nullable = false, precision = 10, scale = 2)
     @field:NotNull(message = "Amount is required")
     @field:DecimalMin(value = "0.01", message = "Amount must be greater than 0")
     val amount: BigDecimal,
-
     @Enumerated(EnumType.STRING)
     @Column(name = "donation_type", nullable = false)
     val donationType: DonationType,
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     val member: Member? = null,
-
     @Column(name = "anonymous", nullable = false)
     val isAnonymous: Boolean = false,
-
     @Column
     val notes: String? = null,
-
     @Column(name = "donation_date", nullable = false)
     val donationDate: LocalDateTime = LocalDateTime.now(),
-
     @Column(name = "created_at", nullable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now()
+    val createdAt: LocalDateTime = LocalDateTime.now(),
 ) {
     // Arrow Option helpers for safe nullable access
     fun getIdOption(): Option<UUID> = Option.fromNullable(id)
@@ -53,8 +46,9 @@ data class Donation(
     fun getIsAnonymous(): Boolean = isAnonymous
 
     // Functional helper to get donor name or anonymous
-    fun getDonorName(): String = when (val memberOption = getMemberOption()) {
-        is None -> if (isAnonymous) "Anonymous" else "Unknown"
-        is Some -> "${memberOption.value.firstName} ${memberOption.value.lastName}"
-    }
+    fun getDonorName(): String =
+        when (val memberOption = getMemberOption()) {
+            is None -> if (isAnonymous) "Anonymous" else "Unknown"
+            is Some -> "${memberOption.value.firstName} ${memberOption.value.lastName}"
+        }
 }

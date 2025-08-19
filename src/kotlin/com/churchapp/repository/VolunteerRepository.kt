@@ -8,6 +8,8 @@ import java.util.*
 @Repository
 interface VolunteerRepository : JpaRepository<Volunteer, UUID> {
     fun findByMemberId(memberId: UUID): List<Volunteer>
+
     fun findByIsActive(isActive: Boolean): List<Volunteer>
+
     fun findByRole(role: String): List<Volunteer>
 }

@@ -1,8 +1,8 @@
 package com.churchapp.service
 
 import arrow.core.Either
-import arrow.core.Option
 import arrow.core.None
+import arrow.core.Option
 import arrow.core.Some
 import arrow.core.left
 import arrow.core.right
@@ -19,13 +19,15 @@ import java.time.LocalDateTime
 class AuthenticationService(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder,
-    private val jwtTokenService: JwtTokenService
+    private val jwtTokenService: JwtTokenService,
 ) {
-
     private val logger = LoggerFactory.getLogger(AuthenticationService::class.java)
 
     // Authenticate user with functional error handling
-    fun authenticate(username: String, password: String): Either<AuthError, AuthResult> {
+    fun authenticate(
+        username: String,
+        password: String,
+    ): Either<AuthError, AuthResult> {
         val credentialsResult = validateCredentials(username, password)
         return when (credentialsResult) {
             is Either.Left -> credentialsResult
@@ -56,7 +58,7 @@ class AuthenticationService(
         username: String,
         email: String,
         password: String,
-        role: RoleType = RoleType.MEMBER
+        role: RoleType = RoleType.MEMBER,
     ): Either<AuthError, User> {
         val validationResult = validateRegistration(username, email, password)
         return when (validationResult) {
@@ -69,13 +71,14 @@ class AuthenticationService(
                 } else {
                     try {
                         val encodedPassword = passwordEncoder.encode(password)
-                        val user = User(
-                            username = username,
-                            password = encodedPassword,
-                            email = email,
-                            role = role,
-                            createdAt = LocalDateTime.now()
-                        )
+                        val user =
+                            User(
+                                username = username,
+                                password = encodedPassword,
+                                email = email,
+                                role = role,
+                                createdAt = LocalDateTime.now(),
+                            )
                         userRepository.save(user).right()
                     } catch (e: Exception) {
                         logger.error("Error registering user: $username", e)
@@ -109,46 +112,63 @@ class AuthenticationService(
     }
 
     // Find user by username with Option
-    private fun findUserByUsername(username: String): Option<User> = try {
-        Option.fromNullable(userRepository.findByUsername(username))
-    } catch (e: Exception) {
-        logger.error("Error finding user by username: $username", e)
-        None
-    }
+    private fun findUserByUsername(username: String): Option<User> =
+        try {
+            Option.fromNullable(userRepository.findByUsername(username))
+        } catch (e: Exception) {
+            logger.error("Error finding user by username: $username", e)
+            None
+        }
 
     // Validation functions using Arrow
-    private fun validateCredentials(username: String, password: String): Either<AuthError, Credentials> = when {
-        username.isBlank() -> AuthError.ValidationError("Username cannot be blank").left()
-        password.isBlank() -> AuthError.ValidationError("Password cannot be blank").left()
-        else -> Credentials(username, password).right()
-    }
+    private fun validateCredentials(
+        username: String,
+        password: String,
+    ): Either<AuthError, Credentials> =
+        when {
+            username.isBlank() -> AuthError.ValidationError("Username cannot be blank").left()
+            password.isBlank() -> AuthError.ValidationError("Password cannot be blank").left()
+            else -> Credentials(username, password).right()
+        }
 
-    private fun validateRegistration(username: String, email: String, password: String): Either<AuthError, ValidationResult> = when {
-        username.isBlank() -> AuthError.ValidationError("Username cannot be blank").left()
-        username.length < 3 -> AuthError.ValidationError("Username must be at least 3 characters").left()
-        email.isBlank() -> AuthError.ValidationError("Email cannot be blank").left()
-        !isValidEmail(email) -> AuthError.ValidationError("Invalid email format").left()
-        password.isBlank() -> AuthError.ValidationError("Password cannot be blank").left()
-        password.length < 6 -> AuthError.ValidationError("Password must be at least 6 characters").left()
-        else -> ValidationResult(username, email, password).right()
-    }
+    private fun validateRegistration(
+        username: String,
+        email: String,
+        password: String,
+    ): Either<AuthError, ValidationResult> =
+        when {
+            username.isBlank() -> AuthError.ValidationError("Username cannot be blank").left()
+            username.length < 3 -> AuthError.ValidationError("Username must be at least 3 characters").left()
+            email.isBlank() -> AuthError.ValidationError("Email cannot be blank").left()
+            !isValidEmail(email) -> AuthError.ValidationError("Invalid email format").left()
+            password.isBlank() -> AuthError.ValidationError("Password cannot be blank").left()
+            password.length < 6 -> AuthError.ValidationError("Password must be at least 6 characters").left()
+            else -> ValidationResult(username, email, password).right()
+        }
 
-    private fun isValidEmail(email: String): Boolean =
-        email.matches(Regex("^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})$"))
+    private fun isValidEmail(email: String): Boolean = email.matches(Regex("^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})$"))
 }
 
 // Sealed class for authentication errors
 sealed class AuthError(val message: String) {
     data class InvalidCredentials(val details: String) : AuthError("Invalid credentials: $details")
+
     data class UserAlreadyExists(val details: String) : AuthError("User already exists: $details")
+
     data class UserNotFound(val details: String) : AuthError("User not found: $details")
+
     data class ValidationError(val details: String) : AuthError("Validation error: $details")
+
     data class RegistrationFailed(val details: String) : AuthError("Registration failed: $details")
+
     data class TokenGenerationFailed(val details: String) : AuthError("Token generation failed: $details")
+
     data class InvalidToken(val details: String) : AuthError("Invalid token: $details")
 }
 
 // Data classes for authentication
 data class Credentials(val username: String, val password: String)
+
 data class ValidationResult(val username: String, val email: String, val password: String)
+
 data class AuthResult(val user: User, val token: String)
