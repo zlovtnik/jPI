@@ -3,29 +3,34 @@ package com.churchapp.entity
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Some
-import jakarta.persistence.*
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.JoinTable
+import jakarta.persistence.ManyToMany
+import jakarta.persistence.ManyToOne
+import jakarta.persistence.Table
 import jakarta.validation.constraints.NotBlank
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 @Entity
 @Table(name = "groups")
 data class Group(
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    val id: UUID? = null,
+    @Id @GeneratedValue(strategy = GenerationType.UUID) val id: UUID? = null,
     @Column(nullable = false)
     @field:NotBlank(message = "Group name is required")
     val name: String,
-    @Column(columnDefinition = "TEXT")
-    val description: String? = null,
+    @Column(columnDefinition = "TEXT") val description: String? = null,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "leader_id")
     val leader: Member? = null,
-    @Column(name = "max_members")
-    val maxMembers: Int? = null,
-    @Column(name = "is_active", nullable = false)
-    val isActive: Boolean = true,
+    @Column(name = "max_members") val maxMembers: Int? = null,
+    @Column(name = "is_active", nullable = false) val isActive: Boolean = true,
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "group_members",
@@ -35,8 +40,7 @@ data class Group(
     val members: Set<Member> = emptySet(),
     @Column(name = "created_at", nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
-    @Column(name = "updated_at")
-    val updatedAt: LocalDateTime? = null,
+    @Column(name = "updated_at") val updatedAt: LocalDateTime? = null,
 ) {
     // Arrow Option helpers
     fun getIdOption(): Option<UUID> = Option.fromNullable(id)

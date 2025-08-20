@@ -67,24 +67,7 @@ class Member(
 
     fun toBuilder(): Builder = Builder().copyFrom(this)
 
-    // Extension function for Builder
-
-    // Extension function to copy fields from Member to Builder, scoped inside Member for visibility
-    fun Builder.copyFrom(member: Member): Builder =
-        this.id(member.id)
-            .firstName(member.firstName)
-            .lastName(member.lastName)
-            .email(member.email)
-            .phoneNumber(member.phoneNumber)
-            .dateOfBirth(member.dateOfBirth)
-            .address(member.address)
-            .membershipDate(member.membershipDate)
-            .baptismDate(member.baptismDate)
-            .isActive(member.isActive)
-            .family(member.family)
-            .user(member.user)
-            .createdAt(member.createdAt)
-            .updatedAt(member.updatedAt)
+    // (Removed redundant Builder.copyFrom extension to avoid shadowing Builder.copyFrom)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -192,3 +175,6 @@ class Member(
         }
     }
 }
+
+// Convenience top-level alias to create a Builder from an existing Member
+fun builderFrom(member: Member) = Member.builderFrom(member)
