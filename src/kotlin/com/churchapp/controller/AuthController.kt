@@ -5,7 +5,11 @@ import com.churchapp.service.AuthError
 import com.churchapp.service.AuthenticationService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.CrossOrigin
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/auth")
@@ -17,60 +21,67 @@ class AuthController(
     fun login(
         @RequestBody loginRequest: LoginRequest,
     ): ResponseEntity<Any> =
-        authenticationService.authenticate(loginRequest.username, loginRequest.password).fold(
-            ifLeft = { error -> handleAuthError(error) },
-            ifRight = { authResult ->
-                ResponseEntity.ok(
-                    LoginResponse(
-                        token = authResult.token,
-                        username = authResult.user.username,
-                        role = authResult.user.role.name,
-                        email = authResult.user.email,
-                    ),
-                )
-            },
-        )
+        authenticationService
+            .authenticate(loginRequest.username, loginRequest.password)
+            .fold(
+                ifLeft = { error -> handleAuthError(error) },
+                ifRight = { authResult ->
+                    ResponseEntity.ok(
+                        LoginResponse(
+                            token = authResult.token,
+                            username = authResult.user.username,
+                            role = authResult.user.role.name,
+                            email = authResult.user.email,
+                        ),
+                    )
+                },
+            )
 
     @PostMapping("/register")
     fun register(
         @RequestBody registerRequest: RegisterRequest,
     ): ResponseEntity<Any> =
-        authenticationService.registerUser(
-            username = registerRequest.username,
-            email = registerRequest.email,
-            password = registerRequest.password,
-            role = registerRequest.role ?: RoleType.MEMBER,
-        ).fold(
-            ifLeft = { error -> handleAuthError(error) },
-            ifRight = { user ->
-                ResponseEntity.status(HttpStatus.CREATED).body(
-                    RegisterResponse(
-                        id = user.id.toString(),
-                        username = user.username,
-                        email = user.email,
-                        role = user.role.name,
-                    ),
-                )
-            },
-        )
+        authenticationService
+            .registerUser(
+                username = registerRequest.username,
+                email = registerRequest.email,
+                password = registerRequest.password,
+                role = registerRequest.role ?: RoleType.MEMBER,
+            )
+            .fold(
+                ifLeft = { error -> handleAuthError(error) },
+                ifRight = { user ->
+                    ResponseEntity.status(HttpStatus.CREATED)
+                        .body(
+                            RegisterResponse(
+                                id = user.id.toString(),
+                                username = user.username,
+                                email = user.email,
+                                role = user.role.name,
+                            ),
+                        )
+                },
+            )
 
     @PostMapping("/validate")
     fun validateToken(
         @RequestBody tokenRequest: TokenRequest,
     ): ResponseEntity<Any> =
-        authenticationService.getUserFromToken(tokenRequest.token).fold(
-            ifLeft = { error -> handleAuthError(error) },
-            ifRight = { user ->
-                ResponseEntity.ok(
-                    UserInfo(
-                        id = user.id.toString(),
-                        username = user.username,
-                        email = user.email,
-                        role = user.role.name,
-                    ),
-                )
-            },
-        )
+        authenticationService
+            .getUserFromToken(tokenRequest.token)
+            .fold(
+                ifLeft = { error -> handleAuthError(error) },
+                ifRight = { user ->
+                    ResponseEntity.ok(
+                        UserInfo(
+                            id = user.id.toString(),
+                            username = user.username,
+                            email = user.email,
+                            role = user.role.name,
+                        ),
+                    )
+                },
+            )
 
     // Functional error handling using Arrow Either
     private fun handleAuthError(error: AuthError): ResponseEntity<Any> =

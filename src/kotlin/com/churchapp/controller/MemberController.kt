@@ -18,54 +18,68 @@ class MemberController(
     fun getMemberById(
         @PathVariable id: UUID,
     ): ResponseEntity<Any> =
-        memberService.findById(id).fold(
-            ifLeft = { error -> handleMemberError(error) },
-            ifRight = { member -> ResponseEntity.ok(member) },
-        )
+        memberService
+            .findById(id)
+            .fold(
+                ifLeft = { error -> handleMemberError(error) },
+                ifRight = { member -> ResponseEntity.ok(member) },
+            )
 
     @GetMapping
     fun getAllActiveMembers(): ResponseEntity<Any> =
-        memberService.getActiveMembers().fold(
-            ifLeft = { error -> handleMemberError(error) },
-            ifRight = { members -> ResponseEntity.ok(members) },
-        )
+        memberService
+            .getActiveMembers()
+            .fold(
+                ifLeft = { error -> handleMemberError(error) },
+                ifRight = { members -> ResponseEntity.ok(members) },
+            )
 
     @PostMapping
     fun createMember(
         @RequestBody member: Member,
     ): ResponseEntity<Any> =
-        memberService.createMember(member).fold(
-            ifLeft = { error -> handleMemberError(error) },
-            ifRight = { createdMember -> ResponseEntity.status(HttpStatus.CREATED).body(createdMember) },
-        )
+        memberService
+            .createMember(member)
+            .fold(
+                ifLeft = { error -> handleMemberError(error) },
+                ifRight = { createdMember ->
+                    ResponseEntity.status(HttpStatus.CREATED).body(createdMember)
+                },
+            )
 
     @PutMapping("/{id}")
     fun updateMember(
         @PathVariable id: UUID,
         @RequestBody member: Member,
     ): ResponseEntity<Any> =
-        memberService.updateMember(id, member).fold(
-            ifLeft = { error -> handleMemberError(error) },
-            ifRight = { updatedMember -> ResponseEntity.ok(updatedMember) },
-        )
+        memberService
+            .updateMember(id, member)
+            .fold(
+                ifLeft = { error -> handleMemberError(error) },
+                ifRight = { updatedMember -> ResponseEntity.ok(updatedMember) },
+            )
 
     @DeleteMapping("/{id}")
     fun deactivateMember(
         @PathVariable id: UUID,
     ): ResponseEntity<Any> =
-        memberService.deactivateMember(id).fold(
-            ifLeft = { error -> handleMemberError(error) },
-            ifRight = { deactivatedMember -> ResponseEntity.ok(deactivatedMember) },
-        )
+        memberService
+            .deactivateMember(id)
+            .fold(
+                ifLeft = { error -> handleMemberError(error) },
+                ifRight = { deactivatedMember -> ResponseEntity.ok(deactivatedMember) },
+            )
 
     @GetMapping("/email/{email}")
     fun getMemberByEmail(
         @PathVariable email: String,
     ): ResponseEntity<Any> =
-        memberService.findByEmailOption(email).fold(
-            ifEmpty = { ResponseEntity.notFound().build<Any>() },
-            ifSome = { member -> ResponseEntity.ok(member) },
-        )
+        memberService
+            .findByEmailOption(email)
+            .fold(
+                ifEmpty = { ResponseEntity.notFound().build<Any>() },
+                ifSome = { member -> ResponseEntity.ok(member) },
+            )
 
     // Functional error handling using Arrow Either
     private fun handleMemberError(error: MemberError): ResponseEntity<Any> =
