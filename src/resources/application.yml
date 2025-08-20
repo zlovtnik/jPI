@@ -3,9 +3,9 @@ spring:
     name: church-app
   
   datasource:
-    url: jdbc:mariadb://localhost:3306/churchdb
-    username: root
-    password: secret
+  url: ${DB_URL:jdbc:mariadb://localhost:3306/churchdb}
+  username: ${DB_USERNAME:root}
+  password: ${DB_PASSWORD:secret}
     driver-class-name: org.mariadb.jdbc.Driver
     hikari:
       maximum-pool-size: 20
@@ -23,10 +23,10 @@ spring:
           time_zone: UTC
   
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
+  host: ${RABBIT_HOST:localhost}
+  port: ${RABBIT_PORT:5672}
+  username: ${RABBIT_USERNAME:guest}
+  password: ${RABBIT_PASSWORD:guest}
     connection-timeout: 10s
     template:
       retry:
@@ -52,11 +52,11 @@ server:
 
 # JWT Configuration
 jwt:
-  secret: mySecretKey1234567890123456789012345678901234567890
+  secret: ${JWT_SECRET:mySecretKey1234567890123456789012345678901234567890}
   expiration: 86400000 # 24 hours in milliseconds
 
 app:
-  publicBaseUrl: http://localhost:8080
+  publicBaseUrl: ${APP_PUBLIC_BASE_URL:http://localhost:8080}
 
 logging:
   level:

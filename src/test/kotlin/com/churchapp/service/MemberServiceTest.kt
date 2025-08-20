@@ -2,16 +2,23 @@ package com.churchapp.service
 
 import com.churchapp.entity.Member
 import com.churchapp.repository.MemberRepository
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.api.fail
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mock
-import org.mockito.Mockito.*
+import org.mockito.Mockito.`any`
+import org.mockito.Mockito.`verify`
+import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
 import java.time.LocalDate
-import java.util.*
+import java.util.Optional
+import java.util.UUID
 
 @ExtendWith(MockitoExtension::class)
 @DisplayName("MemberService Tests")
@@ -41,7 +48,7 @@ class MemberServiceTest {
     @Test
     fun `should create member successfully`() {
         `when`(memberRepository.save(any(Member::class.java))).thenReturn(member)
-        `when`(memberRepository.existsByEmail(anyString())).thenReturn(false)
+        `when`(memberRepository.findByEmail(anyString())).thenReturn(null)
 
         val result = memberService.createMember(member)
 
@@ -58,17 +65,40 @@ class MemberServiceTest {
 
     @Test
     fun `should fail to create member when email already exists`() {
-        `when`(memberRepository.existsByEmail(anyString())).thenReturn(true)
+        // Create a complete existing member with all required fields
+        val existingMember =
+            Member.builder()
+                .id(UUID.randomUUID())
+                .email(member.email)
+                .firstName("Existing")
+                .lastName("User")
+                .phoneNumber("123-456-7890")
+                .address("123 Main St")
+                .dateOfBirth(LocalDate.of(1990, 1, 1))
+                .membershipDate(LocalDate.now())
+                .build()
+
+        println("Test: Existing member email: ${existingMember.email}")
+        println("Test: Member being created email: ${member.email}")
+
+        `when`(memberRepository.findByEmail(member.email)).thenReturn(existingMember)
 
         val result = memberService.createMember(member)
+
+        println("Test: Result is ${if (result.isLeft()) "Left" else "Right"}: $result")
 
         assertTrue(result.isLeft())
         result.fold(
             { error ->
+                println("Test: Error received: $error")
                 assertNotNull(error)
                 assertTrue(error is MemberError.ValidationError)
+                assertEquals("Validation error: Email already exists", (error as MemberError.ValidationError).message)
             },
-            { fail("Expected error but got success") },
+            { success ->
+                println("Test: Unexpected success: $success")
+                fail("Expected error but got success")
+            },
         )
     }
 
@@ -114,8 +144,8 @@ class MemberServiceTest {
         val updatedMember = Member.builderFrom(member).id(id).firstName("Jane").build()
 
         `when`(memberRepository.findById(id)).thenReturn(Optional.of(existingMember))
+        `when`(memberRepository.findByEmail(anyString())).thenReturn(null)
         `when`(memberRepository.save(any(Member::class.java))).thenReturn(updatedMember)
-        `when`(memberRepository.existsByEmail(anyString())).thenReturn(false)
 
         val result = memberService.updateMember(id, updatedMember)
 

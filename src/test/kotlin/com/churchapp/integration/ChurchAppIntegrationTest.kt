@@ -3,7 +3,10 @@ package com.churchapp.integration
 import com.churchapp.entity.Member
 import com.churchapp.entity.User
 import com.churchapp.security.ChurchUserPrincipal
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
@@ -96,11 +99,7 @@ class ChurchAppIntegrationTest {
                 .build()
 
         val member =
-            Member.builder()
-                .firstName("Min")
-                .lastName("Test")
-                .email("min@test.com")
-                .build()
+            Member.builder().firstName("Min").lastName("Test").email("min@test.com").build()
 
         assertNotNull(user)
         assertNotNull(member)

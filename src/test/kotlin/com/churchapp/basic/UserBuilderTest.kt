@@ -2,9 +2,12 @@ package com.churchapp.basic
 
 import com.churchapp.entity.User
 import com.churchapp.entity.enums.RoleType
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertAll
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import java.util.*
+import java.util.UUID
 
 class UserBuilderTest {
     @Test

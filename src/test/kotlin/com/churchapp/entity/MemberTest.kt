@@ -1,11 +1,14 @@
 package com.churchapp.entity
 
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
-import java.util.*
+import java.util.UUID
 
 @DisplayName("Member Entity Tests")
 class MemberTest {
@@ -49,7 +52,7 @@ class MemberTest {
     @Test
     fun `should handle phone number option`() {
         assertTrue(member.getPhoneNumberOption().isSome())
-        assertEquals("123-456-7890", member.getPhoneNumberOption().orNull())
+        assertEquals("123-456-7890", member.getPhoneNumberOption().getOrNull())
     }
 
     @Test
@@ -67,13 +70,13 @@ class MemberTest {
     @Test
     fun `should handle address option`() {
         assertTrue(member.getAddressOption().isSome())
-        assertEquals("123 Main St", member.getAddressOption().orNull())
+        assertEquals("123 Main St", member.getAddressOption().getOrNull())
     }
 
     @Test
     fun `should handle date of birth option`() {
         assertTrue(member.getDateOfBirthOption().isSome())
-        assertEquals(LocalDate.of(1990, 1, 1), member.getDateOfBirthOption().orNull())
+        assertEquals(LocalDate.of(1990, 1, 1), member.getDateOfBirthOption().getOrNull())
     }
 
     @Test
@@ -87,7 +90,7 @@ class MemberTest {
                 .build()
 
         assertTrue(memberWithFamily.getFamilyOption().isSome())
-        assertEquals(family, memberWithFamily.getFamilyOption().orNull())
+        assertEquals(family, memberWithFamily.getFamilyOption().getOrNull())
     }
 
     @Test
@@ -106,7 +109,7 @@ class MemberTest {
                 .build()
 
         assertTrue(baptizedMember.getBaptismDateOption().isSome())
-        assertEquals(LocalDate.of(2020, 1, 1), baptizedMember.getBaptismDateOption().orNull())
+        assertEquals(LocalDate.of(2020, 1, 1), baptizedMember.getBaptismDateOption().getOrNull())
     }
 
     @Test
@@ -145,8 +148,8 @@ class MemberTest {
         assertEquals("Jane", builtMember.firstName)
         assertEquals("Smith", builtMember.lastName)
         assertEquals("jane.smith@example.com", builtMember.email)
-        assertEquals("098-765-4321", builtMember.getPhoneNumberOption().orNull())
-        assertEquals("456 Oak St", builtMember.getAddressOption().orNull())
-        assertEquals(family, builtMember.getFamilyOption().orNull())
+        assertEquals("098-765-4321", builtMember.getPhoneNumberOption().getOrNull())
+        assertEquals("456 Oak St", builtMember.getAddressOption().getOrNull())
+        assertEquals(family, builtMember.getFamilyOption().getOrNull())
     }
 }

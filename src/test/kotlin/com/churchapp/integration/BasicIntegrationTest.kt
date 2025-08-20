@@ -5,10 +5,12 @@ import com.churchapp.entity.Member
 import com.churchapp.entity.User
 import com.churchapp.entity.enums.RoleType
 import com.churchapp.security.ChurchUserPrincipal
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
-import java.util.*
+import java.util.UUID
 
 /**
  * Basic integration test to verify that all the core components work together

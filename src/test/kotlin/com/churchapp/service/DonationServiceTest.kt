@@ -5,7 +5,10 @@ import com.churchapp.entity.Donation
 import com.churchapp.entity.Member
 import com.churchapp.entity.enums.DonationType
 import com.churchapp.repository.DonationRepository
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -13,24 +16,26 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito
-import org.mockito.Mockito.*
+import org.mockito.Mockito.doNothing
+import org.mockito.Mockito.doThrow
+import org.mockito.Mockito.times
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.context.ApplicationEventPublisher
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.*
+import java.util.Optional
+import java.util.UUID
 
 @ExtendWith(MockitoExtension::class)
 class DonationServiceTest {
-    @Mock
-    private lateinit var donationRepository: DonationRepository
+    @Mock private lateinit var donationRepository: DonationRepository
 
-    @Mock
-    private lateinit var eventPublisher: ApplicationEventPublisher
+    @Mock private lateinit var eventPublisher: ApplicationEventPublisher
 
-    @InjectMocks
-    private lateinit var donationService: DonationService
+    @InjectMocks private lateinit var donationService: DonationService
 
     private lateinit var testDonation: Donation
     private lateinit var testMember: Member
@@ -112,7 +117,8 @@ class DonationServiceTest {
                 testDonation.donationDate,
                 testDonation.createdAt,
             )
-        Mockito.`when`(donationRepository.save(any(Donation::class.java))).thenReturn(updatedDonation)
+        Mockito.`when`(donationRepository.save(any(Donation::class.java)))
+            .thenReturn(updatedDonation)
 
         // When
         val result = donationService.updateDonation(updatedDonation)
@@ -181,7 +187,8 @@ class DonationServiceTest {
     fun `getDonationById should return some when donation exists`() {
         // Given
         val donationId = UUID.randomUUID()
-        Mockito.`when`(donationRepository.findById(donationId)).thenReturn(Optional.of(testDonation))
+        Mockito.`when`(donationRepository.findById(donationId))
+            .thenReturn(Optional.of(testDonation))
 
         // When
         val result = donationService.getDonationById(donationId)
@@ -239,7 +246,8 @@ class DonationServiceTest {
         val startDate = LocalDateTime.now().minusMonths(1)
         val endDate = LocalDateTime.now()
         val donations = listOf(testDonation)
-        Mockito.`when`(donationRepository.findByDonationDateBetween(startDate, endDate)).thenReturn(donations)
+        Mockito.`when`(donationRepository.findByDonationDateBetween(startDate, endDate))
+            .thenReturn(donations)
 
         // When
         val result = donationService.getDonationsByDateRange(startDate, endDate)

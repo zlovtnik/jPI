@@ -4,7 +4,9 @@ import com.churchapp.entity.User
 import com.churchapp.entity.enums.RoleType
 import com.churchapp.repository.UserRepository
 import com.churchapp.security.JwtTokenService
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
