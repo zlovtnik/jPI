@@ -9,7 +9,7 @@ import com.churchapp.entity.Member
 import com.churchapp.repository.MemberRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import java.util.*
+import java.util.UUID
 
 @Service
 class MemberService(
@@ -58,14 +58,36 @@ class MemberService(
     }
 
     // Functional validation using Arrow
-    private fun validateMember(member: Member): Either<MemberError, Member> =
+    private fun validateMember(
+        member: Member,
+        excludeId: UUID? = null,
+    ): Either<MemberError, Member> =
         when {
-            member.firstName.isBlank() -> MemberError.ValidationError("First name cannot be blank").left()
-            member.lastName.isBlank() -> MemberError.ValidationError("Last name cannot be blank").left()
-            member.email.isBlank() -> MemberError.ValidationError("Email cannot be blank").left()
-            !isValidEmail(member.email) -> MemberError.ValidationError("Invalid email format").left()
-            memberRepository.existsByEmail(member.email) -> MemberError.ValidationError("Email already exists").left()
-            else -> member.right()
+            member.firstName.isBlank() ->
+                MemberError.ValidationError("First name cannot be blank").left()
+            member.lastName.isBlank() ->
+                MemberError.ValidationError("Last name cannot be blank").left()
+            member.email.isBlank() ->
+                MemberError.ValidationError("Email cannot be blank").left()
+            !isValidEmail(member.email) ->
+                MemberError.ValidationError("Invalid email format").left()
+            else -> {
+                // Check for existing member with same email but allow the current member
+                // (excludeId)
+                val existing =
+                    try {
+                        memberRepository.findByEmail(member.email)
+                    } catch (e: Exception) {
+                        logger.error("Error checking existing email: ${e.message}", e)
+                        null
+                    }
+
+                if (existing != null && existing.id != excludeId) {
+                    MemberError.ValidationError("Email already exists").left()
+                } else {
+                    member.right()
+                }
+            }
         }
 
     // Get all active members using functional approach
@@ -87,7 +109,11 @@ class MemberService(
             is Either.Left -> existingMemberResult
             is Either.Right -> {
                 val existingMember = existingMemberResult.value
-                val validationResult = validateMember(updatedMember.toBuilder().id(existingMember.id).build())
+                val validationResult =
+                    validateMember(
+                        updatedMember.toBuilder().id(existingMember.id).build(),
+                        excludeId = existingMember.id,
+                    )
                 when (validationResult) {
                     is Either.Left -> validationResult
                     is Either.Right -> {

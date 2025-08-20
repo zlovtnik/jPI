@@ -102,24 +102,29 @@ class DatabaseService(
 
             // Normalize result: if any value is a ResultSet / Cursor-like, convert to list of maps
             val normalized =
-                rawResult.mapValues { (_, v) ->
-                    when (v) {
-                        is ResultSet -> {
-                            // Convert ResultSet to list of maps
-                            val rows = mutableListOf<Map<String, Any?>>()
-                            val rs = v
-                            val md = rs.metaData
-                            while (rs.next()) {
-                                val row = mutableMapOf<String, Any?>()
-                                for (i in 1..md.columnCount) {
-                                    row[md.getColumnLabel(i)] = rs.getObject(i)
+                rawResult.mapValues { (_, value) ->
+                    when (value) {
+                        is ResultSet ->
+                            value.use { rs ->
+                                try {
+                                    val md = rs.metaData
+                                    val columnCount = md.columnCount
+                                    generateSequence {
+                                        if (rs.next()) {
+                                            (1..columnCount).associate { i ->
+                                                md.getColumnLabel(i) to rs.getObject(i)
+                                            }
+                                        } else {
+                                            null
+                                        }
+                                    }.toList()
+                                } catch (e: Exception) {
+                                    logger.error("Error processing ResultSet", e)
+                                    throw e
                                 }
-                                rows.add(row)
                             }
-                            rows
-                        }
-                        is List<*> -> v
-                        else -> v
+                        is List<*> -> value
+                        else -> value
                     }
                 }
 
@@ -127,7 +132,7 @@ class DatabaseService(
             message.body = normalized
             message.setHeader("procedureError", false)
         } catch (e: Exception) {
-            logger.error("Stored procedure call failed: ${'$'}{e.message}", e)
+            logger.error("Stored procedure call failed: ${e.message}", e)
             message.body = mapOf("error" to (e.message ?: "unknown error"))
             message.setHeader("procedureError", true)
         }

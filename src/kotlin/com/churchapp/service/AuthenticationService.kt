@@ -64,22 +64,28 @@ class AuthenticationService(
         return when (validationResult) {
             is Either.Left -> validationResult
             is Either.Right -> {
-                if (userRepository.existsByUsername(username)) {
+                val (_, _, _, normUsername, normEmail, normPassword) = validationResult.value
+
+                if (userRepository.existsByUsername(normUsername)) {
                     AuthError.UserAlreadyExists("Username already exists").left()
-                } else if (userRepository.existsByEmail(email)) {
+                } else if (userRepository.existsByEmail(normEmail)) {
                     AuthError.UserAlreadyExists("Email already exists").left()
                 } else {
                     try {
-                        val encodedPassword = passwordEncoder.encode(password)
+                        val encodedPassword = passwordEncoder.encode(normPassword)
                         val user =
                             User(
-                                username = username,
+                                username = normUsername,
                                 password = encodedPassword,
-                                email = email,
+                                email = normEmail,
                                 role = role,
                                 createdAt = LocalDateTime.now(),
                             )
                         userRepository.save(user).right()
+                    } catch (e: org.springframework.dao.DataIntegrityViolationException) {
+                        // Handle race condition where username or email was taken after our check
+                        logger.warn("Unique constraint violation registering user: $username", e)
+                        AuthError.UserAlreadyExists("Username or email already exists").left()
                     } catch (e: Exception) {
                         logger.error("Error registering user: $username", e)
                         AuthError.RegistrationFailed(e.message ?: "Unknown error").left()
@@ -135,16 +141,26 @@ class AuthenticationService(
         username: String,
         email: String,
         password: String,
-    ): Either<AuthError, ValidationResult> =
-        when {
-            username.isBlank() -> AuthError.ValidationError("Username cannot be blank").left()
-            username.length < 3 -> AuthError.ValidationError("Username must be at least 3 characters").left()
-            email.isBlank() -> AuthError.ValidationError("Email cannot be blank").left()
-            !isValidEmail(email) -> AuthError.ValidationError("Invalid email format").left()
-            password.isBlank() -> AuthError.ValidationError("Password cannot be blank").left()
-            password.length < 6 -> AuthError.ValidationError("Password must be at least 6 characters").left()
-            else -> ValidationResult(username, email, password).right()
+    ): Either<AuthError, ValidationResult> {
+        val normalizedUsername = username.trim()
+        val normalizedEmail = email.trim()
+        val normalizedPassword = password.trim()
+
+        return when {
+            normalizedUsername.isBlank() -> AuthError.ValidationError("Username cannot be blank").left()
+            normalizedUsername.length < 3 -> AuthError.ValidationError("Username must be at least 3 characters").left()
+            normalizedEmail.isBlank() -> AuthError.ValidationError("Email cannot be blank").left()
+            !isValidEmail(normalizedEmail) -> AuthError.ValidationError("Invalid email format").left()
+            normalizedPassword.isBlank() -> AuthError.ValidationError("Password cannot be blank").left()
+            normalizedPassword.length < 6 -> AuthError.ValidationError("Password must be at least 6 characters").left()
+            else ->
+                ValidationResult(
+                    username = normalizedUsername,
+                    email = normalizedEmail,
+                    password = normalizedPassword,
+                ).right()
         }
+    }
 
     private fun isValidEmail(email: String): Boolean = email.matches(Regex("^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})$"))
 }
@@ -169,6 +185,13 @@ sealed class AuthError(val message: String) {
 // Data classes for authentication
 data class Credentials(val username: String, val password: String)
 
-data class ValidationResult(val username: String, val email: String, val password: String)
+data class ValidationResult(
+    val username: String,
+    val email: String,
+    val password: String,
+    val normalizedUsername: String = username.trim().lowercase(),
+    val normalizedEmail: String = email.trim().lowercase(),
+    val normalizedPassword: String = password.trim(),
+)
 
 data class AuthResult(val user: User, val token: String)
