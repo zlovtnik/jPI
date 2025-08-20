@@ -12,13 +12,23 @@ spec:
       http:
         paths:
           {{- range .paths }}
-          - path: {{ . }}
-            pathType: Prefix
+          {{- if kindIs "string" . }}
+          - path: {{ . | quote }}
+            pathType: "Prefix"
             backend:
               service:
                 name: {{ include "jpi.fullname" $ }}
                 port:
                   number: {{ $.Values.service.port }}
+          {{- else }}
+          - path: {{ .path | default "/" | quote }}
+            pathType: {{ .pathType | default "Prefix" | quote }}
+            backend:
+              service:
+                name: {{ include "jpi.fullname" $ }}
+                port:
+                  number: {{ $.Values.service.port }}
+          {{- end }}
           {{- end }}
     {{- end }}
   {{- if .Values.ingress.tls }}
