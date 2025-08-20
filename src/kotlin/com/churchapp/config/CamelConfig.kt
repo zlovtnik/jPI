@@ -13,9 +13,23 @@ class CamelConfig {
     private val logger = LoggerFactory.getLogger(CamelConfig::class.java)
 
     companion object {
-        private const val MEMBER_CREATED_QUEUE = "spring-rabbitmq:member.created.queue"
-        private const val DONATION_CREATED_QUEUE = "spring-rabbitmq:donation.created.queue"
-        private const val EMAIL_NOTIFICATION_QUEUE = "spring-rabbitmq:email.notification.queue"
+        // Shared exchange for churchapp events
+        private const val EVENTS_EXCHANGE =
+            "spring-rabbitmq:churchapp.events?autoDeclare=true"
+
+        // Producers
+        private const val MEMBER_CREATED_PRODUCER =
+            "$EVENTS_EXCHANGE&routingKey=member.created"
+        private const val DONATION_CREATED_PRODUCER =
+            "$EVENTS_EXCHANGE&routingKey=donation.created"
+        private const val EMAIL_NOTIFICATION_PRODUCER =
+            "$EVENTS_EXCHANGE&routingKey=email.notification"
+
+        // Consumers
+        private const val MEMBER_CREATED_CONSUMER =
+            "$EVENTS_EXCHANGE&queues=member.created.queue"
+        private const val EMAIL_NOTIFICATION_CONSUMER =
+            "$EVENTS_EXCHANGE&queues=email.notification.queue"
     }
 
     @Bean
@@ -32,11 +46,11 @@ class CamelConfig {
                 from("direct:memberCreated")
                     .log("Processing member created event: \${body}")
                     .marshal().json()
-                    .to(MEMBER_CREATED_QUEUE)
+                    .to(MEMBER_CREATED_PRODUCER)
                     .to("direct:sendWelcomeEmail")
 
                 // Member created queue consumer
-                from(MEMBER_CREATED_QUEUE)
+                from(MEMBER_CREATED_CONSUMER)
                     .log("Received member created message: \${body}")
                     .unmarshal().json()
                     .to("bean:auditService?method=logMemberCreated")
@@ -45,21 +59,21 @@ class CamelConfig {
                 from("direct:donationCreated")
                     .log("Processing donation created event: \${body}")
                     .marshal().json()
-                    .to(DONATION_CREATED_QUEUE)
+                    .to(DONATION_CREATED_PRODUCER)
                     .to("direct:sendDonationThankYou")
 
                 // Email notification routing
                 from("direct:sendWelcomeEmail")
                     .log("Sending welcome email for: \${body}")
-                    .to(EMAIL_NOTIFICATION_QUEUE)
+                    .to(EMAIL_NOTIFICATION_PRODUCER)
 
                 // Donation thank you email routing
                 from("direct:sendDonationThankYou")
                     .log("Sending donation thank you email for: \${body}")
-                    .to(EMAIL_NOTIFICATION_QUEUE)
+                    .to(EMAIL_NOTIFICATION_PRODUCER)
 
                 // Email notification queue consumer
-                from(EMAIL_NOTIFICATION_QUEUE)
+                from(EMAIL_NOTIFICATION_CONSUMER)
                     .log("Processing email notification: \${body}")
                     .to("bean:emailService?method=sendEmail")
 

@@ -1,9 +1,23 @@
+buildscript {
+    ext {
+        kotlinVersion = '1.9.24' // Matches Spring Boot 3.3.2's Kotlin version
+    }
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+        classpath "org.jetbrains.kotlin:kotlin-allopen:$kotlinVersion"
+    }
+}
+
 plugins {
     id 'org.springframework.boot' version '3.3.2'
     id 'io.spring.dependency-management' version '1.1.6'
-    id 'org.jetbrains.kotlin.jvm' version '1.9.10'
-    id 'org.jetbrains.kotlin.plugin.spring' version '1.9.10'
-    id 'org.jetbrains.kotlin.plugin.jpa' version '1.9.10'
+    id 'org.jetbrains.kotlin.jvm' version "$kotlinVersion"
+    id 'org.jetbrains.kotlin.plugin.spring' version "$kotlinVersion"
+    id 'org.jetbrains.kotlin.plugin.jpa' version "$kotlinVersion"
     id 'org.jlleitschuh.gradle.ktlint' version '12.1.1'
     id 'jacoco'
 }
@@ -24,16 +38,19 @@ group = 'com.churchapp'
 version = '0.0.1-SNAPSHOT'
 
 java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
     sourceCompatibility = '17'
 }
 
-kotlin {
-    jvmToolchain(17)
-    
-    // Configure compiler options
-    compilerOptions {
-        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
-        freeCompilerArgs.add("-Xjvm-default=all")
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        jvmTarget = '17'
+        freeCompilerArgs = [
+            '-Xjvm-target=17',
+            '-Xjvm-default=all'
+        ]
     }
 }
 
@@ -43,7 +60,7 @@ sourceSets {
             srcDirs = ['src/kotlin', 'src/main/kotlin', 'src/main/java']
         }
         java {
-            srcDirs = ['src/java', 'build/generated/source/kapt/main', 'build/generated/source/kaptKotlin/main']
+            srcDirs = ['src/java']
         }
         resources {
             srcDirs = ['src/resources']
@@ -123,6 +140,19 @@ dependencies {
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.testcontainers:postgresql'
     testImplementation 'org.testcontainers:rabbitmq'
+    
+    // H2 Database for testing
+    testRuntimeOnly 'com.h2database:h2'
+    
+    // Test Containers
+    testImplementation 'org.testcontainers:testcontainers'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:postgresql'
+    testImplementation 'org.testcontainers:rabbitmq'
+    
+    // MockK for Kotlin testing
+    testImplementation 'io.mockk:mockk:1.13.4'
+    testImplementation 'com.ninja-squad:springmockk:4.0.2'
 }
 
 tasks.named('test') {
