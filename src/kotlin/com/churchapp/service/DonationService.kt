@@ -24,6 +24,7 @@ class DonationService(
     @org.springframework.transaction.annotation.Transactional
     fun createDonation(donation: Donation): Either<Exception, Donation> =
         try {
+            requireNotNull(donation.amount) { "Donation amount is required" }
             require(donation.amount.compareTo(BigDecimal.ZERO) > 0) { "Donation amount must be positive" }
 
             val savedDonation = donationRepository.save(donation)
@@ -42,6 +43,7 @@ class DonationService(
     fun updateDonation(donation: Donation): Either<Exception, Donation> =
         try {
             require(donation.id != null) { "Donation ID is required for update" }
+            requireNotNull(donation.amount) { "Donation amount is required" }
             require(donation.amount.compareTo(BigDecimal.ZERO) > 0) { "Donation amount must be positive" }
 
             donationRepository.save(donation).right()
