@@ -71,7 +71,7 @@ sourceSets {
             srcDirs = ['src/test/kotlin']
         }
         java {
-            srcDirs = ['src/test/java', 'build/generated/source/kapt/test', 'build/generated/source/kaptKotlin/test']
+            srcDirs = ['src/test/java']
         }
         resources {
             srcDirs = ['src/test/resources']
