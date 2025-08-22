@@ -9,6 +9,11 @@ import java.util.*
 @Repository
 interface EventRepository : JpaRepository<Event, UUID> {
     fun findByIsActive(isActive: Boolean): List<Event>
-    fun findByStartDateBetween(startDate: LocalDateTime, endDate: LocalDateTime): List<Event>
+
+    fun findByStartDateBetween(
+        startDate: LocalDateTime,
+        endDate: LocalDateTime,
+    ): List<Event>
+
     fun findByLocationContaining(location: String): List<Event>
 }

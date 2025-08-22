@@ -4,11 +4,12 @@ import com.churchapp.entity.User
 import com.churchapp.entity.enums.RoleType
 import com.churchapp.repository.UserRepository
 import com.churchapp.security.JwtTokenService
-import com.churchapp.service.AuthenticationService
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
@@ -17,7 +18,6 @@ import org.springframework.security.crypto.password.PasswordEncoder
 @ExtendWith(MockitoExtension::class)
 @DisplayName("AuthenticationService Tests")
 class AuthenticationServiceTest {
-
     @Mock
     private lateinit var userRepository: UserRepository
 
@@ -32,18 +32,20 @@ class AuthenticationServiceTest {
 
     @BeforeEach
     fun setup() {
-        authenticationService = AuthenticationService(
-            userRepository, 
-            passwordEncoder, 
-            jwtTokenService
-        )
-        
-        user = User.builder()
-            .username("testuser")
-            .email("test@example.com")
-            .password("encodedPassword")
-            .role(RoleType.MEMBER)
-            .build()
+        authenticationService =
+            AuthenticationService(
+                userRepository,
+                passwordEncoder,
+                jwtTokenService,
+            )
+
+        user =
+            User.builder()
+                .username("testuser")
+                .email("test@example.com")
+                .password("encodedPassword")
+                .role(RoleType.MEMBER)
+                .build()
     }
 
     @Test
@@ -65,25 +67,27 @@ class AuthenticationServiceTest {
 
     @Test
     fun `should handle user roles properly`() {
-        val adminUser = User.builder()
-            .username("admin")
-            .email("admin@example.com")
-            .password("password")
-            .role(RoleType.ADMIN)
-            .build()
-        
+        val adminUser =
+            User.builder()
+                .username("admin")
+                .email("admin@example.com")
+                .password("password")
+                .role(RoleType.ADMIN)
+                .build()
+
         assertEquals(RoleType.ADMIN, adminUser.role)
         assertEquals(RoleType.MEMBER, user.role)
     }
 
     @Test
     fun `should create users with proper defaults`() {
-        val newUser = User.builder()
-            .username("newuser")
-            .email("new@example.com")
-            .password("password")
-            .build()
-        
+        val newUser =
+            User.builder()
+                .username("newuser")
+                .email("new@example.com")
+                .password("password")
+                .build()
+
         assertTrue(newUser.isEnabled)
         assertEquals(RoleType.MEMBER, newUser.role) // Default role
         assertNotNull(newUser.createdAt)

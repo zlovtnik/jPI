@@ -10,15 +10,13 @@ import org.springframework.stereotype.Service
 
 @Service
 class CustomUserDetailsService(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) : UserDetailsService {
-
     override fun loadUserByUsername(username: String): UserDetails {
         return userRepository.findByUsername(username)
             ?: throw UsernameNotFoundException("User not found: $username")
     }
 
     // Additional method using Arrow Option for functional approach
-    fun loadUserByUsernameOption(username: String): Option<User> =
-        Option.fromNullable(userRepository.findByUsername(username))
+    fun loadUserByUsernameOption(username: String): Option<User> = Option.fromNullable(userRepository.findByUsername(username))
 }

@@ -1,0 +1,9 @@
+Thank you for installing jpi.
+
+To verify the release, run:
+
+  kubectl get all -l app.kubernetes.io/instance={{ .Release.Name }}
+
+To connect to the service (ClusterIP), you can port-forward:
+
+  kubectl port-forward svc/{{ include "jpi.fullname" . }} 8080:{{ .Values.service.port }}

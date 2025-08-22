@@ -10,12 +10,19 @@ import java.util.*
 @Repository
 interface DonationRepository : JpaRepository<Donation, UUID> {
     fun findByMemberId(memberId: UUID): List<Donation>
+
     fun findByDonationType(donationType: DonationType): List<Donation>
+
     fun findByDonationTypeAndDonationDateBetween(
         donationType: DonationType,
         startDate: LocalDateTime,
-        endDate: LocalDateTime
+        endDate: LocalDateTime,
     ): List<Donation>
-    fun findByDonationDateBetween(startDate: LocalDateTime, endDate: LocalDateTime): List<Donation>
+
+    fun findByDonationDateBetween(
+        startDate: LocalDateTime,
+        endDate: LocalDateTime,
+    ): List<Donation>
+
     fun findByIsAnonymous(isAnonymous: Boolean): List<Donation>
 }

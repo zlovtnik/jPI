@@ -8,7 +8,13 @@ import java.util.*
 @Repository
 interface EventRegistrationRepository : JpaRepository<EventRegistration, UUID> {
     fun findByEventId(eventId: UUID): List<EventRegistration>
+
     fun findByMemberId(memberId: UUID): List<EventRegistration>
-    fun findByEventIdAndMemberId(eventId: UUID, memberId: UUID): EventRegistration?
+
+    fun findByEventIdAndMemberId(
+        eventId: UUID,
+        memberId: UUID,
+    ): EventRegistration?
+
     fun findByAttended(attended: Boolean): List<EventRegistration>
 }

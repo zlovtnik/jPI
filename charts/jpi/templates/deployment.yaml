@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "jpi.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "jpi.name" . }}
+    helm.sh/chart: {{ include "jpi.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "jpi.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "jpi.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ include "jpi.name" . }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.port }}
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+            - name: APP_PUBLIC_BASE_URL
+              value: {{ .Values.app.publicBaseUrl | quote }}
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "jpi.fullname" . }}-secrets
+                  key: jwtSecretKey
+            - name: DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "jpi.fullname" . }}-secrets
+                  key: db.url
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "jpi.fullname" . }}-secrets
+                  key: db.username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "jpi.fullname" . }}-secrets
+                  key: db.password
+            - name: RABBIT_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "jpi.fullname" . }}-secrets
+                  key: rabbit.host
+            - name: RABBIT_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "jpi.fullname" . }}-secrets
+                  key: rabbit.port
+            - name: RABBIT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "jpi.fullname" . }}-secrets
+                  key: rabbit.username
+            - name: RABBIT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "jpi.fullname" . }}-secrets
+                  key: rabbit.password
+      {{- if .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml .Values.image.pullSecrets | nindent 8 }}
+      {{- else }}
+      imagePullSecrets: []
+      {{- end }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations:
+        {{- toYaml .Values.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.affinity }}
+      affinity:
+        {{- toYaml .Values.affinity | nindent 8 }}
+      {{- end }}

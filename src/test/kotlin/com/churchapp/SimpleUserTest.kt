@@ -1,25 +1,24 @@
 package com.churchapp.entity
 
-import com.churchapp.entity.User
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Assertions.*
-import java.time.LocalDateTime
-import java.util.*
+import org.junit.jupiter.api.Test
 
 @DisplayName("User Entity Simple Tests")
 class SimpleUserTest {
-
     private lateinit var user: User
 
     @BeforeEach
     fun setup() {
-        user = User.builder()
-            .username("testuser")
-            .email("test@example.com")
-            .password("password123")
-            .build()
+        user =
+            User.builder()
+                .username("testuser")
+                .email("test@example.com")
+                .password("password123")
+                .build()
     }
 
     @Test

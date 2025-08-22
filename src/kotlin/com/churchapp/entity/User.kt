@@ -1,8 +1,8 @@
 package com.churchapp.entity
 
 import arrow.core.Option
-import arrow.core.some
 import arrow.core.none
+import arrow.core.some
 import com.churchapp.entity.enums.RoleType
 import jakarta.persistence.*
 import org.springframework.security.core.GrantedAuthority
@@ -17,32 +17,23 @@ class User(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID? = null,
-
     @Column(unique = true, nullable = false)
     private val username: String,
-
     @Column(nullable = false)
     private val password: String,
-
     @Column(unique = true, nullable = false)
     val email: String,
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     val role: RoleType = RoleType.MEMBER,
-
     @Column(nullable = false)
     private var enabled: Boolean = true,
-
     @Column(name = "created_at", nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
-
     @Column(name = "updated_at")
-    val updatedAt: LocalDateTime? = null
+    val updatedAt: LocalDateTime? = null,
 ) : UserDetails {
-
-    override fun getAuthorities(): Collection<GrantedAuthority> =
-        listOf(SimpleGrantedAuthority("ROLE_${role.name}"))
+    override fun getAuthorities(): Collection<GrantedAuthority> = listOf(SimpleGrantedAuthority("ROLE_${role.name}"))
 
     override fun getPassword(): String = password
 
@@ -69,7 +60,7 @@ class User(
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is User) return false
-        
+
         // If both objects have non-null ids, compare by id (stable database identity)
         return if (id != null && other.id != null) {
             id == other.id
@@ -80,10 +71,10 @@ class User(
     }
 
     override fun hashCode(): Int {
-    // Use id for hash when available (stable). For transient objects (null id)
-    // return a stable constant to avoid identity-based hash changes across JVM runs
-    // and reduce surprises when placing transient entities in hashed collections.
-    return id?.hashCode() ?: 0
+        // Use id for hash when available (stable). For transient objects (null id)
+        // return a stable constant to avoid identity-based hash changes across JVM runs
+        // and reduce surprises when placing transient entities in hashed collections.
+        return id?.hashCode() ?: 0
     }
 
     override fun toString(): String {
@@ -109,18 +100,25 @@ class UserBuilder {
     private var updatedAt: LocalDateTime? = null
 
     fun id(id: UUID?) = apply { this.id = id }
+
     fun username(username: String?) = apply { this.username = username }
+
     fun password(password: String?) = apply { this.password = password }
+
     fun email(email: String?) = apply { this.email = email }
+
     fun role(role: RoleType) = apply { this.role = role }
+
     fun enabled(enabled: Boolean) = apply { this.enabled = enabled }
+
     fun createdAt(createdAt: LocalDateTime?) = apply { this.createdAt = createdAt }
+
     fun updatedAt(updatedAt: LocalDateTime?) = apply { this.updatedAt = updatedAt }
 
     fun build(): User {
         // Validate required fields
         val missingFields = mutableListOf<String>()
-        
+
         if (username.isNullOrBlank()) {
             missingFields.add("username")
         }
@@ -130,14 +128,14 @@ class UserBuilder {
         if (email.isNullOrBlank()) {
             missingFields.add("email")
         }
-        
+
         if (missingFields.isNotEmpty()) {
             throw IllegalStateException("Missing required fields: ${missingFields.joinToString(", ")}")
         }
-        
+
         // Set createdAt to now if not explicitly provided
         val finalCreatedAt = createdAt ?: LocalDateTime.now()
-        
+
         return User(id, username!!, password!!, email!!, role, enabled, finalCreatedAt, updatedAt)
     }
 }

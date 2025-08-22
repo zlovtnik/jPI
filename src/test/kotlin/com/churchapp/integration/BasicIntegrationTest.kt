@@ -1,32 +1,34 @@
 package com.churchapp.integration
 
-import com.churchapp.entity.User
+import com.churchapp.dto.MemberDTO
 import com.churchapp.entity.Member
+import com.churchapp.entity.User
 import com.churchapp.entity.enums.RoleType
 import com.churchapp.security.ChurchUserPrincipal
-import com.churchapp.dto.MemberDTO
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
 import java.time.LocalDate
-import java.util.*
+import java.util.UUID
 
 /**
  * Basic integration test to verify that all the core components work together
  * without requiring a full Spring context.
  */
 class BasicIntegrationTest {
-
     @Test
     fun `should create and work with User entity`() {
         // Test User creation and builder pattern
-        val user = User.builder()
-            .id(UUID.randomUUID())
-            .username("testuser")
-            .password("password")
-            .email("test@example.com")
-            .role(RoleType.MEMBER)
-            .enabled(true)
-            .build()
+        val user =
+            User.builder()
+                .id(UUID.randomUUID())
+                .username("testuser")
+                .password("password")
+                .email("test@example.com")
+                .role(RoleType.MEMBER)
+                .enabled(true)
+                .build()
 
         assertNotNull(user)
         assertEquals("testuser", user.username)
@@ -45,25 +47,27 @@ class BasicIntegrationTest {
     @Test
     fun `should create and work with Member entity`() {
         // Test Member creation
-        val member = Member(
-            firstName = "John",
-            lastName = "Doe",
-            email = "john.doe@example.com",
-            phoneNumber = "555-1234",
-            dateOfBirth = LocalDate.of(1990, 1, 1)
-        )
+        val member =
+            Member(
+                firstName = "John",
+                lastName = "Doe",
+                email = "john.doe@example.com",
+                phoneNumber = "555-1234",
+                dateOfBirth = LocalDate.of(1990, 1, 1),
+            )
 
         assertNotNull(member)
         assertEquals("John Doe", member.fullName)
         assertTrue(member.isActive)
 
         // Test Member builder pattern
-        val builtMember = Member.builder()
-            .firstName("Jane")
-            .lastName("Smith")
-            .email("jane.smith@example.com")
-            .isActive(false)
-            .build()
+        val builtMember =
+            Member.builder()
+                .firstName("Jane")
+                .lastName("Smith")
+                .email("jane.smith@example.com")
+                .isActive(false)
+                .build()
 
         assertEquals("Jane", builtMember.firstName)
         assertEquals("Smith", builtMember.lastName)
@@ -93,13 +97,14 @@ class BasicIntegrationTest {
         assertEquals(123, memberDTO.familyId)
 
         // Test MemberDTO with builder
-        val builtDTO = MemberDTO.builder()
-            .firstName("Bob")
-            .lastName("Wilson")
-            .email("bob@example.com")
-            .phone("555-9876")
-            .active(false)
-            .build()
+        val builtDTO =
+            MemberDTO.builder()
+                .firstName("Bob")
+                .lastName("Wilson")
+                .email("bob@example.com")
+                .phone("555-9876")
+                .active(false)
+                .build()
 
         assertEquals("Bob", builtDTO.firstName)
         assertEquals("Wilson", builtDTO.lastName)
@@ -111,20 +116,22 @@ class BasicIntegrationTest {
     @Test
     fun `should verify entity relationships work`() {
         // Create a User
-        val user = User(
-            username = "memberuser",
-            password = "password",
-            email = "member@example.com",
-            role = RoleType.MEMBER
-        )
+        val user =
+            User(
+                username = "memberuser",
+                password = "password",
+                email = "member@example.com",
+                role = RoleType.MEMBER,
+            )
 
         // Create a Member associated with the User
-        val member = Member(
-            firstName = "Church",
-            lastName = "Member",
-            email = "member@example.com",
-            user = user
-        )
+        val member =
+            Member(
+                firstName = "Church",
+                lastName = "Member",
+                email = "member@example.com",
+                user = user,
+            )
 
         // Verify the relationship
         val userOption = member.getUserOption()
@@ -140,11 +147,12 @@ class BasicIntegrationTest {
     @Test
     fun `should handle optional fields correctly`() {
         // Create member with minimal required fields
-        val minimalMember = Member(
-            firstName = "Min",
-            lastName = "Max",
-            email = "min@example.com"
-        )
+        val minimalMember =
+            Member(
+                firstName = "Min",
+                lastName = "Max",
+                email = "min@example.com",
+            )
 
         // Test all optional field accessors return None
         assertTrue(minimalMember.getPhoneNumberOption().isNone())

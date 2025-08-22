@@ -8,5 +8,6 @@ import java.util.*
 @Repository
 interface FamilyRepository : JpaRepository<Family, UUID> {
     fun findByFamilyNameContaining(familyName: String): List<Family>
+
     fun findByAddressContaining(address: String): List<Family>
 }
